@@ -1,4 +1,4 @@
-#version 400 core
+#version 330 core
 
 /// @brief[in] the vertex normal
 in vec3 fragmentNormal;

@@ -1,4 +1,4 @@
-#version 400 core
+#version 330 core
 // this shader is modified from the OpenGL Shading Language cookbook
 /// @brief the vertex passed in
 layout (location =0) in vec3 inVert;
@@ -49,12 +49,12 @@ void getEyeSpace(out vec3 norm, out vec4 position)
 	norm = normalize(  normalMatrix * inNormal);
 	position = MV * vec4(inVert,1.0);
 }
-
+/*
 subroutine vec3 shadeModelType( vec4 position, vec3 normal);
 subroutine uniform shadeModelType shadeModel;
 
 subroutine( shadeModelType )
-
+*/
 vec3 phongModel( vec4 position, vec3 norm )
 {
 	vec3 s = normalize(vec3(light.position - position.xyz));
@@ -71,7 +71,7 @@ vec3 phongModel( vec4 position, vec3 norm )
 	return ambient + diffuse + spec;
 }
 
-subroutine( shadeModelType )
+//subroutine( shadeModelType )
 vec3 diffuseOnly( vec4 position, vec3 norm )
 {
 		vec3 s = normalize( vec3(light.position - position.xyz) );

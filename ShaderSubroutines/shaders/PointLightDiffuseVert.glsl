@@ -1,4 +1,4 @@
-#version 400
+#version 330
 /// @brief flag to indicate if model has unit normals if not normalize
 uniform bool Normalize;
 // the eye position of the camera

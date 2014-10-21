@@ -1,4 +1,4 @@
-#version 400 core
+#version 330 core
 uniform mat4 MVP;
 /// @brief the vertex passed in
 layout (location=0) in vec3 inVert;

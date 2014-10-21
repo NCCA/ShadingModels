@@ -1,4 +1,4 @@
-#version 400
+#version 330
 
 /// @brief[in] the vertex normal
 in vec3 fragmentNormal;

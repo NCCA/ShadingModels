@@ -1,4 +1,4 @@
-#version 400 core
+#version 330 core
 /// @brief the current fragment normal for the vert being processed
 out vec3 fragmentNormal;
 /// @brief the vertex passed in
