@@ -4,7 +4,7 @@ set(PROJECT_NAME PointLightASD)
 project(${PROJECT_NAME})
 
 #Bring the headers into the project (local ones)
-set (PROJECT_SOURCE_DIR ${PROJECT_SOURCE_DIR}/${PROJECT_NAME})
+include_directories(include $ENV{HOME}/NGL/include)
 set(SOURCES src/main.cpp  
 			src/NGLScene.cpp  
 			src/OpenGLWindow.cpp
