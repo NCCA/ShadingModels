@@ -120,6 +120,7 @@ void NGLScene::loadMatricesToShader()
   MVP=MV*m_cam->getProjectionMatrix() ;
   normalMatrix=MV;
   normalMatrix.inverse();
+  normalMatrix.transpose();
   shader->setUniform("MVP",MVP);
   shader->setUniform("MV",MV);
   shader->setUniform("normalMatrix",normalMatrix);

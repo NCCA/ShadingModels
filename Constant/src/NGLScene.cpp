@@ -83,7 +83,7 @@ void NGLScene::initialize()
   shader->linkProgramObject("Constant");
   // and make it active ready to load values
   (*shader)["Constant"]->use();
-  shader->setShaderParam4f("Colour",1,0,0,1.0);
+  shader->setShaderParam4f("Colour",1,0,1,1.0);
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position

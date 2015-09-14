@@ -13,7 +13,7 @@ uniform mat4 MVP;
 uniform mat3 normalMatrix;
 out vec4 lightPos;
 
-void main(void)
+void main()
 {
 // calculate the fragments surface normal
  fragmentNormal = (normalMatrix*inNormal);

@@ -106,7 +106,7 @@ void NGLScene::initialize()
   shader->setShaderParam3f("material.Kd",0.8,0.0,0.0);
   // white spec
   shader->setShaderParam3f("material.Ks",1.0,1.0,1.0);
-  shader->setShaderParam1f("material.shininess",10);
+  shader->setShaderParam1f("material.shininess",16);
   // now for  the lights values (all set to white)
   /*struct LightInfo
   {

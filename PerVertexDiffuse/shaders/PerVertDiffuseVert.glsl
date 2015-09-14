@@ -15,7 +15,7 @@ uniform vec3 lightPos; // Light position in eye coords.
 uniform vec3 Kd;           // Diffuse reflectivity
 uniform vec3 Ld;            // Light source intensity
 // light output per vert
-out vec3 lightIntensity;
+smooth out vec3 lightIntensity;
 
 void main()
 {
