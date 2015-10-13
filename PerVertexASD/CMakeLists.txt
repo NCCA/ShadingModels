@@ -7,9 +7,7 @@ project(${PROJECT_NAME})
 include_directories(include $ENV{HOME}/NGL/include)
 set(SOURCES src/main.cpp  
 			src/NGLScene.cpp  
-			src/OpenGLWindow.cpp
 			include/NGLScene.h  
-			include/OpenGLWindow.h
 
 )
 # define this if you want to include the stanford data sets
