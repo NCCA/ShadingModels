@@ -66,8 +66,8 @@ void NGLScene::initializeGL()
   // we are creating a shader called PointDirLight
   shader->createShaderProgram("PointDirLight");
   // now we are going to create empty shaders for Frag and Vert
-  shader->attachShader("PointDirLightVertex",ngl::VERTEX);
-  shader->attachShader("PointDirLightFragment",ngl::FRAGMENT);
+  shader->attachShader("PointDirLightVertex",ngl::ShaderType::VERTEX);
+  shader->attachShader("PointDirLightFragment",ngl::ShaderType::FRAGMENT);
   // attach the source
   shader->loadShaderSource("PointDirLightVertex","shaders/PointDirLightVert.glsl");
   shader->loadShaderSource("PointDirLightFragment","shaders/PointDirLightFrag.glsl");

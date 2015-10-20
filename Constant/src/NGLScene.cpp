@@ -62,8 +62,8 @@ void NGLScene::initializeGL()
   // we are creating a shader called Constant
   shader->createShaderProgram("Constant");
   // now we are going to create empty shaders for Frag and Vert
-  shader->attachShader("ConstantVertex",ngl::VERTEX);
-  shader->attachShader("ConstantFragment",ngl::FRAGMENT);
+  shader->attachShader("ConstantVertex",ngl::ShaderType::VERTEX);
+  shader->attachShader("ConstantFragment",ngl::ShaderType::FRAGMENT);
   // attach the source
   shader->loadShaderSource("ConstantVertex","shaders/ConstantVertex.glsl");
   shader->loadShaderSource("ConstantFragment","shaders/ConstantFragment.glsl");

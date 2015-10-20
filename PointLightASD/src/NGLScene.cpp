@@ -66,8 +66,8 @@ void NGLScene::initializeGL()
   // we are creating a shader called PointLightDiffuse
   shader->createShaderProgram("PointLightDiffuse");
   // now we are going to create empty shaders for Frag and Vert
-  shader->attachShader("PointLightDiffuseVertex",ngl::VERTEX);
-  shader->attachShader("PointLightDiffuseFragment",ngl::FRAGMENT);
+  shader->attachShader("PointLightDiffuseVertex",ngl::ShaderType::VERTEX);
+  shader->attachShader("PointLightDiffuseFragment",ngl::ShaderType::FRAGMENT);
   // attach the source
   shader->loadShaderSource("PointLightDiffuseVertex","shaders/PointLightDiffuseVert.glsl");
   shader->loadShaderSource("PointLightDiffuseFragment","shaders/PointLightDiffuseFrag.glsl");

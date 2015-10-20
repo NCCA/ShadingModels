@@ -68,8 +68,8 @@ void NGLScene::initializeGL()
   // we are creating a shader called DirectionalLight
   shader->createShaderProgram("DirectionalLight");
   // now we are going to create empty shaders for Frag and Vert
-  shader->attachShader("DirectionalLightVertex",ngl::VERTEX);
-  shader->attachShader("DirectionalLightFragment",ngl::FRAGMENT);
+  shader->attachShader("DirectionalLightVertex",ngl::ShaderType::VERTEX);
+  shader->attachShader("DirectionalLightFragment",ngl::ShaderType::FRAGMENT);
   // attach the source
   shader->loadShaderSource("DirectionalLightVertex","shaders/DirectionalLightVert.glsl");
   shader->loadShaderSource("DirectionalLightFragment","shaders/DirectionalLightFrag.glsl");

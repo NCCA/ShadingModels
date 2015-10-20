@@ -65,8 +65,8 @@ void NGLScene::initializeGL()
   // we are creating a shader called MultipleLights
   shader->createShaderProgram("MultipleLights");
   // now we are going to create empty shaders for Frag and Vert
-  shader->attachShader("MultipleLightsVertex",ngl::VERTEX);
-  shader->attachShader("MultipleLightsFragment",ngl::FRAGMENT);
+  shader->attachShader("MultipleLightsVertex",ngl::ShaderType::VERTEX);
+  shader->attachShader("MultipleLightsFragment",ngl::ShaderType::FRAGMENT);
   // attach the source
   shader->loadShaderSource("MultipleLightsVertex","shaders/MultiplePointLightVert.glsl");
   shader->loadShaderSource("MultipleLightsFragment","shaders/MultiplePointLightFrag.glsl");

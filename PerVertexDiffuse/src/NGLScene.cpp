@@ -67,8 +67,8 @@ void NGLScene::initializeGL()
   // we are creating a shader called PerVertDiffuse
   shader->createShaderProgram("PerVertDiffuse");
   // now we are going to create empty shaders for Frag and Vert
-  shader->attachShader("PerVertDiffuseVertex",ngl::VERTEX);
-  shader->attachShader("PerVertDiffuseFragment",ngl::FRAGMENT);
+  shader->attachShader("PerVertDiffuseVertex",ngl::ShaderType::VERTEX);
+  shader->attachShader("PerVertDiffuseFragment",ngl::ShaderType::FRAGMENT);
   // attach the source
   shader->loadShaderSource("PerVertDiffuseVertex","shaders/PerVertDiffuseVert.glsl");
   shader->loadShaderSource("PerVertDiffuseFragment","shaders/PerVertDiffuseFrag.glsl");
