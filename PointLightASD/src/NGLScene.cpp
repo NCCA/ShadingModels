@@ -96,7 +96,7 @@ void NGLScene::initializeGL()
 
   // now create our light we need to do this after the camera as we need to
   // load the projection to the light transform
-  m_light = new ngl::Light(m_lightPosition,ngl::Colour(1,1,1,1),ngl::POINTLIGHT);
+  m_light = new ngl::Light(m_lightPosition,ngl::Colour(1,1,1,1),ngl::LightModes::POINTLIGHT);
   ngl::Mat4 iv=m_cam->getViewMatrix();
   iv.transpose();
   // we load the transpose of the projection matrix to the light, the light

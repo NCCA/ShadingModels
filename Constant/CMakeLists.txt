@@ -8,8 +8,10 @@ include_directories(include $ENV{HOME}/NGL/include)
 set(SOURCES src/main.cpp  
 			src/NGLScene.cpp  
 			include/NGLScene.h  
-
 )
+# use C++ 11
+set(CMAKE_CXX_STANDARD 11)
+
 # define this if you want to include the stanford data sets
 # these are very big and make compilation time huge
 add_definitions(-DADDLARGEMODELS)

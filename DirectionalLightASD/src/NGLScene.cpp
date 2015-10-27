@@ -99,7 +99,7 @@ void NGLScene::initializeGL()
   // now create our light we do this after the camera so we can pass the transpose
   // projection to the light as it's transform and specify the light in world space
   // all the shader calculations are done in eye space so this will take it into account
-  m_light = new ngl::Light(m_lightPosition,ngl::Colour(1,1,1,1),ngl::DIRECTIONALLIGHT);
+  m_light = new ngl::Light(m_lightPosition,ngl::Colour(1,1,1,1),ngl::LightModes::DIRECTIONALLIGHT);
   //
   ngl::Mat4 iv=m_cam->getViewMatrix();
   m_light->setTransform(iv);

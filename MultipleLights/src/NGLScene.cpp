@@ -112,7 +112,7 @@ void NGLScene::initializeGL()
 
 
   // now create our light
-  m_pointLight = new ngl::Light(ngl::Vec3(3,3,2),ngl::Colour(1,1,1,1),ngl::POINTLIGHT);
+  m_pointLight = new ngl::Light(ngl::Vec3(3,3,2),ngl::Colour(1,1,1,1),ngl::LightModes::POINTLIGHT);
   // load these values to the shader as well
   m_pointLight->setAttenuation(1.2,0,0);
   m_pointLight->enable();
@@ -130,7 +130,7 @@ void NGLScene::initializeGL()
   m_spot->setTransform(iv);
 
   // now create our light
-  m_directionalLight = new ngl::Light(ngl::Vec3(-1,0,0.5),ngl::Colour(1,1,1,1),ngl::DIRECTIONALLIGHT);
+  m_directionalLight = new ngl::Light(ngl::Vec3(-1,0,0.5),ngl::Colour(1,1,1,1),ngl::LightModes::DIRECTIONALLIGHT);
   // load these values to the shader as well
   m_directionalLight->setAttenuation(1.0f,0.0f,0.0f);
   m_directionalLight->enable();
@@ -181,7 +181,7 @@ void NGLScene::drawScene(const std::string &_shader)
 
    // get the VBO instance and draw the built in teapot
   ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
-  ngl::Material m(ngl::POLISHEDSILVER);
+  ngl::Material m(ngl::STDMAT::POLISHEDSILVER);
   m_transform.reset();
   {
     loadMatricesToShader();
@@ -193,7 +193,7 @@ void NGLScene::drawScene(const std::string &_shader)
   {
     m_transform.setPosition(ngl::Vec3(-3,0.0,0.0));
     loadMatricesToShader();
-    m.change(ngl::BLACKPLASTIC);
+    m.change(ngl::STDMAT::BLACKPLASTIC);
     m.loadToShader("material");
     prim->draw("sphere");
   }
@@ -202,7 +202,7 @@ void NGLScene::drawScene(const std::string &_shader)
   {
     m_transform.setPosition(ngl::Vec3(3,0.0,0.0));
     loadMatricesToShader();
-    m.change(ngl::BRASS);
+    m.change(ngl::STDMAT::BRASS);
     m.loadToShader("material");
     prim->draw("cylinder");
   }
@@ -211,7 +211,7 @@ void NGLScene::drawScene(const std::string &_shader)
   {
     m_transform.setPosition(ngl::Vec3(0.0,0.0,3.0));
     loadMatricesToShader();
-    m.change(ngl::BRONZE);
+    m.change(ngl::STDMAT::BRONZE);
     m.loadToShader("material");
     prim->draw("cube");
   }
@@ -220,7 +220,7 @@ void NGLScene::drawScene(const std::string &_shader)
   {
     m_transform.setPosition(ngl::Vec3(-3.0,0.0,3.0));
     loadMatricesToShader();
-    m.change(ngl::CHROME);
+    m.change(ngl::STDMAT::CHROME);
     m.loadToShader("material");
     prim->draw("torus");
   }
@@ -229,7 +229,7 @@ void NGLScene::drawScene(const std::string &_shader)
   {
     m_transform.setPosition(ngl::Vec3(3.0,0.5,3.0));
     loadMatricesToShader();
-    m.change(ngl::COPPER);
+    m.change(ngl::STDMAT::COPPER);
     m.loadToShader("material");
     prim->draw("icosahedron");
   }
@@ -238,7 +238,7 @@ void NGLScene::drawScene(const std::string &_shader)
   {
     m_transform.setPosition(ngl::Vec3(0.0,0.0,-3.0));
     loadMatricesToShader();
-    m.change(ngl::GOLD);
+    m.change(ngl::STDMAT::GOLD);
     m.loadToShader("material");
     prim->draw("cone");
   }
@@ -248,7 +248,7 @@ void NGLScene::drawScene(const std::string &_shader)
   {
     m_transform.setPosition(ngl::Vec3(-3.0,0.5,-3.0));
     loadMatricesToShader();
-    m.change(ngl::PEWTER);
+    m.change(ngl::STDMAT::PEWTER);
     m.loadToShader("material");
     prim->draw("tetrahedron");
   }
@@ -257,7 +257,7 @@ void NGLScene::drawScene(const std::string &_shader)
   {
     m_transform.setPosition(ngl::Vec3(3.0,0.5,-3.0));
     loadMatricesToShader();
-    m.change(ngl::SILVER);
+    m.change(ngl::STDMAT::SILVER);
     m.loadToShader("material");
     prim->draw("octahedron");
   }
@@ -267,7 +267,7 @@ void NGLScene::drawScene(const std::string &_shader)
   {
     m_transform.setPosition(ngl::Vec3(0.0,0.5,-6.0));
     loadMatricesToShader();
-    m.change(ngl::POLISHEDSILVER);
+    m.change(ngl::STDMAT::POLISHEDSILVER);
     m.loadToShader("material");
     prim->draw("football");
   }
@@ -276,7 +276,7 @@ void NGLScene::drawScene(const std::string &_shader)
     m_transform.setPosition(ngl::Vec3(-3.0,0.5,-6.0));
     m_transform.setRotation(0,180,0);
     loadMatricesToShader();
-    m.change(ngl::COPPER);
+    m.change(ngl::STDMAT::COPPER);
     m.loadToShader("material");
     prim->draw("disk");
   }
@@ -285,7 +285,7 @@ void NGLScene::drawScene(const std::string &_shader)
   {
     m_transform.setPosition(ngl::Vec3(3.0,0.5,-6.0));
     loadMatricesToShader();
-    m.change(ngl::BLACKPLASTIC);
+    m.change(ngl::STDMAT::BLACKPLASTIC);
     m.loadToShader("material");
     prim->draw("dodecahedron");
   }
@@ -293,7 +293,7 @@ void NGLScene::drawScene(const std::string &_shader)
   {
     m_transform.setPosition(ngl::Vec3(1.0,0.35,1.0));
     m_transform.setScale(1.5,1.5,1.5);
-    m.change(ngl::PEWTER);
+    m.change(ngl::STDMAT::PEWTER);
     m.loadToShader("material");
     loadMatricesToShader();
     prim->draw("troll");
@@ -304,7 +304,7 @@ void NGLScene::drawScene(const std::string &_shader)
     m_transform.setPosition(ngl::Vec3(-1.0,-0.5,1.0));
     m_transform.setScale(0.1,0.1,0.1);
     loadMatricesToShader();
-    m.change(ngl::COPPER);
+    m.change(ngl::STDMAT::COPPER);
     m.loadToShader("material");
     prim->draw("dragon");
   }
@@ -314,7 +314,7 @@ void NGLScene::drawScene(const std::string &_shader)
     m_transform.setPosition(ngl::Vec3(-2.5,-0.5,1.0));
     m_transform.setScale(0.1,0.1,0.1);
     loadMatricesToShader();
-    m.change(ngl::CHROME);
+    m.change(ngl::STDMAT::CHROME);
     m.loadToShader("material");
     prim->draw("buddah");
   }
@@ -324,7 +324,7 @@ void NGLScene::drawScene(const std::string &_shader)
     m_transform.setPosition(ngl::Vec3(2.5,-0.5,1.0));
     m_transform.setScale(0.1,0.1,0.1);
     loadMatricesToShader();
-    m.change(ngl::BRONZE);
+    m.change(ngl::STDMAT::BRONZE);
     m.loadToShader("material");
     prim->draw("bunny");
   }

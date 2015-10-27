@@ -81,7 +81,7 @@ void NGLScene::initializeGL()
   // and make it active ready to load values
   (*shader)["PointLightDiffuse"]->use();
   //shader->setShaderParam4f("diffuse",0.8,0.3,0.1,1.0);
-  ngl::Light l1(ngl::Vec3(2,2,2),ngl::Colour(1,1,1),ngl::POINTLIGHT);
+  ngl::Light l1(ngl::Vec3(2,2,2),ngl::Colour(1,1,1),ngl::LightModes::POINTLIGHT);
   l1.loadToShader("light");
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
@@ -99,7 +99,7 @@ void NGLScene::initializeGL()
   // light as the shader calculations are done in eye space
   ngl::Mat4 iv=m_cam->getViewMatrix();
   iv.transpose();
-  m_light = new ngl::Light(ngl::Vec3(-5,4,2),ngl::Colour(1,1,1,1),ngl::POINTLIGHT);
+  m_light = new ngl::Light(ngl::Vec3(-5,4,2),ngl::Colour(1,1,1,1),ngl::LightModes::POINTLIGHT);
   // load the iv to the shader for transform
   m_light->setTransform(iv);
   // load these values to the shader as well
