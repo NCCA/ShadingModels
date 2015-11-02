@@ -44,7 +44,6 @@ layout (std140) uniform transforms
 	mat4 MVP;
 	mat4 MV;
 	mat3 normalMatrix;
-
 };
 
 

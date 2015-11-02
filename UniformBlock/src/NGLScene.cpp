@@ -9,7 +9,7 @@
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
 #include <boost/format.hpp>
-
+#include <ngl/NGLStream.h>
 
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
@@ -27,7 +27,7 @@ NGLScene::NGLScene()
   // mouse rotation values set to 0
   m_spinXFace=0;
   m_spinYFace=0;
-  setTitle("Multiple Point Lights");
+  setTitle("Multiple Point Lights Using Uniform Interface Blocks");
 
 }
 
@@ -180,37 +180,44 @@ void NGLScene::loadMatricesToShader()
   MVP=MV*m_cam.getProjectionMatrix() ;
   normalMatrix=MV;
   normalMatrix.inverse();
-
   GLuint progID=(*shader).getProgramID("MultipleLights");
 
   GLuint blockIndex = glGetUniformBlockIndex(progID,
                                             "transforms");
-  const GLchar *names[] = { "MVP", "MV", "normalMatrix" };
+  const GLchar *names[] = { "MVP","MV","normalMatrix" };
 
   GLuint indices[3];
   glGetUniformIndices(progID, 3, names, indices);
   GLint blockSize;
-  glGetActiveUniformBlockiv(progID, blockIndex,
-                        GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
-  GLint offset[4];
-  glGetActiveUniformsiv(progID, 3, indices,
-                        GL_UNIFORM_OFFSET, offset);
+  glGetActiveUniformBlockiv(progID, blockIndex,GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+  GLint offset[3];
+  glGetActiveUniformsiv(progID, 3, indices,GL_UNIFORM_OFFSET, offset);
   std::unique_ptr<GLubyte> blockBuffer(new  GLubyte  [blockSize]);
   std::cout<<"block size "<<blockSize<<" Index "<<indices[0]<<" "<<indices[1]<<" "<<indices[2]<<"\n";
+  std::cout<<"offsets "<<offset[0]<<" "<<offset[1]<<" "<<offset[2]<<"\n";
 
-  memcpy(blockBuffer.get() + offset[0], MVP.openGL(),
-                                  16 * sizeof(GLfloat));
-  memcpy(blockBuffer.get() + offset[1], MV.openGL(),
-                                  16 *sizeof(GLfloat));
-  memcpy(blockBuffer.get() + offset[2], normalMatrix.openGL(),
-                                  9 * sizeof(GLfloat));
+  memcpy(blockBuffer.get() + offset[0], MVP.openGL(),sizeof(ngl::Mat4));
+  memcpy(blockBuffer.get() + offset[1], MV.openGL(),sizeof(ngl::Mat4));
+  memcpy(blockBuffer.get() + offset[2], normalMatrix.openGL(),sizeof(ngl::Mat3));
 
+  std::cout<<sizeof(ngl::Mat4)<<" "<<sizeof(ngl::Mat3)<<"\n";
 
+  struct transforms
+  {
+    ngl::Mat4 MVP;
+    ngl::Mat4 normalMatrix;
+    ngl::Mat4 MV;
+  };
+  transforms data;
+  data.MVP=MVP;
+  data.normalMatrix=MV;
+  data.normalMatrix.inverse();
+  data.MV=MV;
+  std::cout<<"data size "<<sizeof(data)<<"\n";
   GLuint uboHandle;
   glGenBuffers( 1, &uboHandle );
   glBindBuffer( GL_UNIFORM_BUFFER, uboHandle );
-  glBufferData( GL_UNIFORM_BUFFER, blockSize, blockBuffer.get(),
-                GL_DYNAMIC_DRAW );
+  glBufferData( GL_UNIFORM_BUFFER, blockSize,blockBuffer.get(),GL_DYNAMIC_DRAW );
   glBindBufferBase( GL_UNIFORM_BUFFER, blockIndex, uboHandle );
 }
 
