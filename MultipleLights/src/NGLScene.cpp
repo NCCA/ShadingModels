@@ -37,15 +37,12 @@ NGLScene::~NGLScene()
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
 }
 
-void NGLScene::resizeGL(int _w, int _h)
+void NGLScene::resizeGL(QResizeEvent *_event)
 {
-  // set the viewport for openGL we need to take into account retina display
-  // etc by using the pixel ratio as a multiplyer
-  glViewport(0,0,_w*devicePixelRatio(),_h*devicePixelRatio());
+  m_width=_event->size().width()*devicePixelRatio();
+  m_height=_event->size().height()*devicePixelRatio();
   // now set the camera size values as the screen size has changed
-  m_cam->setShape(45.0f,(float)width()/height(),0.05f,350.0f);
-  m_text->setScreenSize(_w,_h);
-  update();
+  m_cam.setShape(45.0f,(float)width()/height(),0.05f,350.0f);
 }
 
 
@@ -94,10 +91,10 @@ void NGLScene::initializeGL()
   ngl::Vec3 to(0,0,0);
   ngl::Vec3 up(0,1,0);
   // now load to our new camera
-  m_cam= new ngl::Camera(from,to,up);
+  m_cam.set(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam->setShape(45,(float)720.0/576.0,0.05,350);
+  m_cam.setShape(45,(float)720.0/576.0,0.05,350);
 
   ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   prim->createSphere("sphere",0.5,50);
@@ -112,15 +109,15 @@ void NGLScene::initializeGL()
 
 
   // now create our light
-  m_pointLight = new ngl::Light(ngl::Vec3(3,3,2),ngl::Colour(1,1,1,1),ngl::LightModes::POINTLIGHT);
+  m_pointLight.reset( new ngl::Light(ngl::Vec3(3,3,2),ngl::Colour(1,1,1,1),ngl::LightModes::POINTLIGHT));
   // load these values to the shader as well
   m_pointLight->setAttenuation(1.2,0,0);
   m_pointLight->enable();
-  ngl::Mat4 iv=m_cam->getViewMatrix();
+  ngl::Mat4 iv=m_cam.getViewMatrix();
   iv.transpose();
   m_pointLight->setTransform(iv);
 
-  m_spot = new ngl::SpotLight(ngl::Vec3(0.2,0,2),ngl::Vec3(0.2,0,0),ngl::Colour(1,1,1));
+  m_spot.reset( new ngl::SpotLight(ngl::Vec3(0.2,0,2),ngl::Vec3(0.2,0,0),ngl::Colour(1,1,1)));
   m_spot->setSpecColour(ngl::Colour(1,1,1,1));
   m_spot->setExponent(1);
   m_spot->setCutoff(12);
@@ -130,17 +127,14 @@ void NGLScene::initializeGL()
   m_spot->setTransform(iv);
 
   // now create our light
-  m_directionalLight = new ngl::Light(ngl::Vec3(-1,0,0.5),ngl::Colour(1,1,1,1),ngl::LightModes::DIRECTIONALLIGHT);
+  m_directionalLight.reset( new ngl::Light(ngl::Vec3(-1,0,0.5),ngl::Colour(1,1,1,1),ngl::LightModes::DIRECTIONALLIGHT));
   // load these values to the shader as well
   m_directionalLight->setAttenuation(1.0f,0.0f,0.0f);
   m_directionalLight->enable();
   m_directionalLight->setTransform(iv);
 
-  m_text = new  ngl::Text(QFont("Arial",14));
-  m_text->setScreenSize(this->size().width(),this->size().height());
-  glViewport(0,0,width(),height());
-
-
+  m_text.reset( new  ngl::Text(QFont("Arial",14)));
+  m_text->setScreenSize(width(),height());
 }
 
 
@@ -154,8 +148,8 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat4 M;
   M=m_transform.getMatrix();
   MV=m_transform.getMatrix()
-     *m_mouseGlobalTX*m_cam->getViewMatrix() ;
-  MVP=MV*m_cam->getProjectionMatrix();
+     *m_mouseGlobalTX*m_cam.getViewMatrix() ;
+  MVP=MV*m_cam.getProjectionMatrix();
   normalMatrix=MV;
   normalMatrix.inverse();
   normalMatrix.transpose();
@@ -163,7 +157,7 @@ void NGLScene::loadMatricesToShader()
   shader->setRegisteredUniform("M",M);
   shader->setRegisteredUniform("MVP",MVP);
   shader->setRegisteredUniform("normalMatrix",normalMatrix);
-  shader->setRegisteredUniform("viewerPos",m_cam->getEye().toVec3());
+  shader->setRegisteredUniform("viewerPos",m_cam.getEye().toVec3());
 
 }
 
@@ -343,13 +337,10 @@ void NGLScene::paintGL()
 {
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+  glViewport(0,0,m_width,m_height);
   // grab an instance of the shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   (*shader)["MultipleLights"]->use();
-
-  // Rotation based on the mouse position for our global transform
-  ngl::Transformation trans;
   // Rotation based on the mouse position for our global
   // transform
   ngl::Mat4 rotX;

@@ -37,14 +37,12 @@ NGLScene::~NGLScene()
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
 }
 
-void NGLScene::resizeGL(int _w, int _h)
+void NGLScene::resizeGL(QResizeEvent *_event)
 {
-  // set the viewport for openGL we need to take into account retina display
-  // etc by using the pixel ratio as a multiplyer
-  glViewport(0,0,_w*devicePixelRatio(),_h*devicePixelRatio());
+  m_width=_event->size().width()*devicePixelRatio();
+  m_height=_event->size().height()*devicePixelRatio();
   // now set the camera size values as the screen size has changed
-  m_cam->setShape(45.0f,(float)width()/height(),0.05f,350.0f);
-  update();
+  m_cam.setShape(45.0f,(float)width()/height(),0.05f,350.0f);
 }
 
 
@@ -160,15 +158,12 @@ void NGLScene::initializeGL()
   ngl::Vec3 to(0,0,0);
   ngl::Vec3 up(0,1,0);
   // now load to our new camera
-  m_cam= new ngl::Camera(from,to,up);
+  m_cam.set(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam->setShape(45,(float)720.0/576.0,0.05,350);
+  m_cam.setShape(45,(float)720.0/576.0,0.05,350);
   ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
   prim->createTrianglePlane("plane",30,30,20,20,ngl::Vec3(0,1,0));
-  glViewport(0,0,width(),height());
-
-
 }
 
 
@@ -181,8 +176,8 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat3 normalMatrix;
   ngl::Mat4 M;
   M=m_transform.getMatrix();
-  MV= M*m_mouseGlobalTX*m_cam->getViewMatrix();
-  MVP=MV*m_cam->getProjectionMatrix() ;
+  MV= M*m_mouseGlobalTX*m_cam.getViewMatrix();
+  MVP=MV*m_cam.getProjectionMatrix() ;
   normalMatrix=MV;
   normalMatrix.inverse();
   shader->setUniform("MVP",MVP);
@@ -194,12 +189,10 @@ void NGLScene::paintGL()
 {
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+  glViewport(0,0,m_width,m_height);
   // grab an instance of the shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   (*shader)["MultipleLights"]->use();
-  // Rotation based on the mouse position for our global transform
-  ngl::Transformation trans;
   // Rotation based on the mouse position for our global
   // transform
   ngl::Mat4 rotX;

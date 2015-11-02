@@ -36,18 +36,14 @@ NGLScene::NGLScene()
 NGLScene::~NGLScene()
 {
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
-  delete m_light;
 }
 
-void NGLScene::resizeGL(int _w, int _h)
+void NGLScene::resizeGL(QResizeEvent *_event)
 {
-  // set the viewport for openGL we need to take into account retina display
-  // etc by using the pixel ratio as a multiplyer
-  glViewport(0,0,_w*devicePixelRatio(),_h*devicePixelRatio());
+  m_width=_event->size().width()*devicePixelRatio();
+  m_height=_event->size().height()*devicePixelRatio();
   // now set the camera size values as the screen size has changed
-  m_cam->setShape(45.0f,(float)width()/height(),0.05f,350.0f);
-  m_text->setScreenSize(_w,_h);
-  update();
+  m_cam.setShape(45.0f,(float)width()/height(),0.05f,350.0f);
 }
 
 
@@ -91,17 +87,17 @@ void NGLScene::initializeGL()
   ngl::Vec3 to(0,0,0);
   ngl::Vec3 up(0,1,0);
   // now load to our new camera
-  m_cam= new ngl::Camera(from,to,up);
+  m_cam.set(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam->setShape(45,(float)720.0/576.0,0.05,350);
+  m_cam.setShape(45,(float)720.0/576.0,0.05,350);
 
   // now create our light we do this after the camera so we can pass the transpose
   // projection to the light as it's transform and specify the light in world space
   // all the shader calculations are done in eye space so this will take it into account
-  m_light = new ngl::Light(m_lightPosition,ngl::Colour(1,1,1,1),ngl::LightModes::DIRECTIONALLIGHT);
+  m_light.reset(  new ngl::Light(m_lightPosition,ngl::Colour(1,1,1,1),ngl::LightModes::DIRECTIONALLIGHT));
   //
-  ngl::Mat4 iv=m_cam->getViewMatrix();
+  ngl::Mat4 iv=m_cam.getViewMatrix();
   m_light->setTransform(iv);
   // load these values to the shader as well
   m_light->loadToShader("light");
@@ -114,9 +110,8 @@ void NGLScene::initializeGL()
   m.setSpecular(ngl::Colour(1,1,1));
   m.setSpecularExponent(80);
   m.loadToShader("material");
-  m_text = new  ngl::Text(QFont("Arial",14));
-  m_text->setScreenSize(this->size().width(),this->size().height());
-  glViewport(0,0,width(),height());
+  m_text.reset(  new  ngl::Text(QFont("Arial",14)));
+  m_text->setScreenSize(width(),height());
 
 }
 
@@ -130,22 +125,22 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat3 normalMatrix;
   ngl::Mat4 M;
   M=m_mouseGlobalTX;
-  MV=M*m_cam->getViewMatrix() ;
-  MVP=MV*m_cam->getProjectionMatrix();
+  MV=M*m_cam.getViewMatrix() ;
+  MVP=MV*m_cam.getProjectionMatrix();
   normalMatrix=MV;
   normalMatrix.inverse();
   shader->setShaderParamFromMat4("MV",MV);
   shader->setShaderParamFromMat4("M",M);
   shader->setShaderParamFromMat4("MVP",MVP);
   shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
-  shader->setShaderParam3f("viewerPos",m_cam->getEye().m_x,m_cam->getEye().m_y,m_cam->getEye().m_z);
+  shader->setShaderParam3f("viewerPos",m_cam.getEye().m_x,m_cam.getEye().m_y,m_cam.getEye().m_z);
 }
 
 void NGLScene::paintGL()
 {
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+  glViewport(0,0,m_width,m_height);
   // grab an instance of the shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   (*shader)["DirectionalLight"]->use();
