@@ -45,7 +45,12 @@ void NGLScene::resizeGL(QResizeEvent *_event)
   m_cam.setShape(45.0f,(float)width()/height(),0.05f,350.0f);
 }
 
-
+void NGLScene::resizeGL(int _w , int _h)
+{
+  m_cam.setShape(45.0f,(float)_w/_h,0.05f,350.0f);
+  m_width=_w*devicePixelRatio();
+  m_height=_h*devicePixelRatio();
+}
 
 void NGLScene::initializeGL()
 {
@@ -182,8 +187,7 @@ void NGLScene::loadMatricesToShader()
   normalMatrix.inverse();
   GLuint progID=(*shader).getProgramID("MultipleLights");
 
-  GLuint blockIndex = glGetUniformBlockIndex(progID,
-                                            "transforms");
+  GLuint blockIndex = glGetUniformBlockIndex(progID,"transforms");
   const GLchar *names[] = { "MVP","MV","normalMatrix" };
 
   GLuint indices[3];
@@ -205,7 +209,7 @@ void NGLScene::loadMatricesToShader()
   struct transforms
   {
     ngl::Mat4 MVP;
-    ngl::Mat4 normalMatrix;
+    ngl::Mat3 normalMatrix;
     ngl::Mat4 MV;
   };
   transforms data;

@@ -29,7 +29,6 @@ NGLScene::NGLScene()
   m_spinYFace=0;
   setTitle("Directional Light");
   m_lightPosition.set(0,2,0);
-
 }
 
 
@@ -44,10 +43,14 @@ void NGLScene::resizeGL(QResizeEvent *_event)
   m_height=_event->size().height()*devicePixelRatio();
   // now set the camera size values as the screen size has changed
   m_cam.setShape(45.0f,(float)width()/height(),0.05f,350.0f);
-
 }
 
-
+void NGLScene::resizeGL(int _w , int _h)
+{
+  m_cam.setShape(45.0f,(float)_w/_h,0.05f,350.0f);
+  m_width=_w*devicePixelRatio();
+  m_height=_h*devicePixelRatio();
+}
 
 void NGLScene::initializeGL()
 {
