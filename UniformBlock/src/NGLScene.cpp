@@ -183,8 +183,9 @@ void NGLScene::loadMatricesToShader()
   M=m_transform.getMatrix();
   MV= M*m_mouseGlobalTX*m_cam.getViewMatrix();
   MVP=MV*m_cam.getProjectionMatrix() ;
-  normalMatrix=MV;
-  normalMatrix.inverse();
+  //normalMatrix=MV;
+  //normalMatrix.inverse();
+
   GLuint progID=(*shader).getProgramID("MultipleLights");
 
   GLuint blockIndex = glGetUniformBlockIndex(progID,"transforms");
@@ -205,19 +206,10 @@ void NGLScene::loadMatricesToShader()
   memcpy(blockBuffer.get() + offset[2], normalMatrix.openGL(),sizeof(ngl::Mat3));
 
   std::cout<<sizeof(ngl::Mat4)<<" "<<sizeof(ngl::Mat3)<<"\n";
+  std::cout<<"MV\n"<<MV<<"\n";
+  std::cout<<"MVP\n"<<MVP<<"\n";
+  std::cout<<"normal\n"<<normalMatrix<<"\n";
 
-  struct transforms
-  {
-    ngl::Mat4 MVP;
-    ngl::Mat3 normalMatrix;
-    ngl::Mat4 MV;
-  };
-  transforms data;
-  data.MVP=MVP;
-  data.normalMatrix=MV;
-  data.normalMatrix.inverse();
-  data.MV=MV;
-  std::cout<<"data size "<<sizeof(data)<<"\n";
   GLuint uboHandle;
   glGenBuffers( 1, &uboHandle );
   glBindBuffer( GL_UNIFORM_BUFFER, uboHandle );
