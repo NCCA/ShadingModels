@@ -178,13 +178,13 @@ void NGLScene::loadMatricesToShader()
 
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
-  ngl::Mat3 normalMatrix;
+  ngl::Mat4 normalMatrix;
   ngl::Mat4 M;
   M=m_transform.getMatrix();
   MV= M*m_mouseGlobalTX*m_cam.getViewMatrix();
   MVP=MV*m_cam.getProjectionMatrix() ;
-  //normalMatrix=MV;
-  //normalMatrix.inverse();
+  normalMatrix=MV;
+  normalMatrix.inverse();
 
   GLuint progID=(*shader).getProgramID("MultipleLights");
 
@@ -197,13 +197,14 @@ void NGLScene::loadMatricesToShader()
   glGetActiveUniformBlockiv(progID, blockIndex,GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
   GLint offset[3];
   glGetActiveUniformsiv(progID, 3, indices,GL_UNIFORM_OFFSET, offset);
-  std::unique_ptr<GLubyte> blockBuffer(new  GLubyte  [blockSize]);
+  std::unique_ptr<GLubyte> blockBuffer(new  GLubyte  [3*sizeof(ngl::Mat4)]);
+  std::cout<<3*sizeof(ngl::Mat4)<<"\n";
   std::cout<<"block size "<<blockSize<<" Index "<<indices[0]<<" "<<indices[1]<<" "<<indices[2]<<"\n";
   std::cout<<"offsets "<<offset[0]<<" "<<offset[1]<<" "<<offset[2]<<"\n";
 
   memcpy(blockBuffer.get() + offset[0], MVP.openGL(),sizeof(ngl::Mat4));
   memcpy(blockBuffer.get() + offset[1], MV.openGL(),sizeof(ngl::Mat4));
-  memcpy(blockBuffer.get() + offset[2], normalMatrix.openGL(),sizeof(ngl::Mat3));
+  memcpy(blockBuffer.get() + offset[2], normalMatrix.openGL(),sizeof(ngl::Mat4));
 
   std::cout<<sizeof(ngl::Mat4)<<" "<<sizeof(ngl::Mat3)<<"\n";
   std::cout<<"MV\n"<<MV<<"\n";
