@@ -9,7 +9,7 @@
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
-
+#include <memory>
 
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
@@ -28,6 +28,7 @@ NGLScene::NGLScene()
   m_spinXFace=0;
   m_spinYFace=0;
   setTitle("Directional Light");
+  m_matIndex=0;
 
 }
 
@@ -78,11 +79,16 @@ void NGLScene::initializeGL()
   // add them to the program
   shader->attachShaderToProgram("PointLightDiffuse","PointLightDiffuseVertex");
   shader->attachShaderToProgram("PointLightDiffuse","PointLightDiffuseFragment");
-
   // now we have associated this data we can link the shader
   shader->linkProgramObject("PointLightDiffuse");
   // and make it active ready to load values
   (*shader)["PointLightDiffuse"]->use();
+  GLuint id=shader->getProgramID("PointLightDiffuse");
+  m_subroutines[0] = glGetSubroutineIndex(id, GL_FRAGMENT_SHADER, "diffuseShading");
+  m_subroutines[1] = glGetSubroutineIndex(id, GL_FRAGMENT_SHADER, "pointLight");
+  std::cout<<"subs "<<m_subroutines[0]<<" "<<m_subroutines[1]<<"\n";
+
+
   //shader->setShaderParam4f("diffuse",0.8,0.3,0.1,1.0);
   ngl::Light l1(ngl::Vec3(2,2,2),ngl::Colour(1,1,1),ngl::LightModes::POINTLIGHT);
   l1.loadToShader("light");
@@ -102,17 +108,25 @@ void NGLScene::initializeGL()
   // light as the shader calculations are done in eye space
   ngl::Mat4 iv=m_cam.getViewMatrix();
   iv.transpose();
-  ngl::Light light(ngl::Vec3(-5,4,2),ngl::Colour(1,1,1,1),ngl::LightModes::POINTLIGHT);
+  ngl::Light light(ngl::Vec3(2,4,2),ngl::Colour(1,1,1,1),ngl::LightModes::POINTLIGHT);
   // load the iv to the shader for transform
   light.setTransform(iv);
   // load these values to the shader as well
   light.loadToShader("light");
+  ngl::Material m(ngl::STDMAT::GOLD);
+  m.loadToShader("material");
 }
 
 
 void NGLScene::loadMatricesToShader()
 {
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
+  shader->use("PointLightDiffuse");
+  GLsizei numActiveUniforms;
+
+  glGetProgramStageiv(shader->getProgramID("PointLightDiffuse"), GL_FRAGMENT_SHADER,
+           GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS, &numActiveUniforms);
+  glUniformSubroutinesuiv(GL_FRAGMENT_SHADER,numActiveUniforms,&m_subroutines[m_matIndex]);
 
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
@@ -123,9 +137,7 @@ void NGLScene::loadMatricesToShader()
   normalMatrix.inverse();
   shader->setShaderParamFromMat4("MVP",MVP);
   shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
-  GLuint m_id=glGetSubroutineUniformLocation(shader->getProgramID("PointLightDiffuse"),GL_FRAGMENT_SHADER,"shadingModelSelection");
-  std::cout<<m_id<<"\n";
-  //glUniformSubroutinesuiv(GL_FRAGMENT_SHADER,1,0);
+
 
 }
 
@@ -259,6 +271,9 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_F : showFullScreen(); break;
   // show windowed
   case Qt::Key_N : showNormal(); break;
+  case Qt::Key_1 : m_matIndex=0; break;
+  case Qt::Key_2 : m_matIndex=1; break;
+
 
   default : break;
   }

@@ -1,4 +1,4 @@
-#version 330
+#version 410
 
 /// @brief[in] the vertex normal
 in vec3 fragmentNormal;
@@ -49,7 +49,8 @@ subroutine uniform shading shadingModelSelection;
 /// @param[in,out] _ambient the ambient colour to be contributed to
 /// @param[in,out] _diffuse the diffuse colour to be contributed to
 /// @param[in,out] _specular the specular colour to be contributed to
-subroutine (shading ) void pointLight(in vec3 _normal,inout vec4 _ambient,inout vec4 _diffuse,inout vec4 _specular)
+subroutine (shading)
+void pointLight(in vec3 _normal,inout vec4 _ambient,inout vec4 _diffuse,inout vec4 _specular)
 {
 	vec3 N = normalize(fragmentNormal);
 	vec3 halfV;
@@ -59,17 +60,17 @@ subroutine (shading ) void pointLight(in vec3 _normal,inout vec4 _ambient,inout 
 	float lambertTerm = dot(N,L);
 	if (lambertTerm > 0.0)
 	{
-                _diffuse+=material.diffuse*light.diffuse*lambertTerm;
+		_diffuse+=material.diffuse*light.diffuse*lambertTerm;
 		_ambient+=material.ambient*light.ambient;
 		halfV = normalize(halfVector);
 		ndothv = max(dot(N, halfV), 0.0);
 		_specular+=material.specular*light.specular*pow(ndothv, material.shininess);
 	}
 
-
 }
 
-subroutine (shading) void diffuseShading(in vec3 _normal, inout vec4 _ambient, inout vec4 _diffuse, inout vec4 _specular)
+subroutine (shading)
+void diffuseShading(in vec3 _normal, inout vec4 _ambient, inout vec4 _diffuse, inout vec4 _specular)
 {
     vec3 N = normalize(fragmentNormal);
     vec3 L = normalize(lightDir);
@@ -77,7 +78,7 @@ subroutine (shading) void diffuseShading(in vec3 _normal, inout vec4 _ambient, i
 
     if (lambertTerm > 0.0)
     {
-            _diffuse+=material.diffuse*light.diffuse*lambertTerm;
+      _diffuse+=material.diffuse*light.diffuse*lambertTerm;
     }
 
 }
