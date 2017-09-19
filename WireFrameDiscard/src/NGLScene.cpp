@@ -98,12 +98,12 @@ void NGLScene::initializeGL()
         // Specular shininess factor
         float shininess;
   };*/
-  shader->setShaderParam3f("material.Ka",0.1,0.1,0.1);
+  shader->setUniform("material.Ka",0.1f,0.1f,0.1f);
   // red diffuse
-  shader->setShaderParam3f("material.Kd",0.8,0.0,0.0);
+  shader->setUniform("material.Kd",0.8f,0.0f,0.0f);
   // white spec
-  shader->setShaderParam3f("material.Ks",1.0,1.0,1.0);
-  shader->setShaderParam1f("material.shininess",100);
+  shader->setUniform("material.Ks",1.0f,1.0f,1.0f);
+  shader->setUniform("material.shininess",100.0f);
   // now for  the lights values (all set to white)
   /*struct LightInfo
   {
@@ -117,9 +117,9 @@ void NGLScene::initializeGL()
   vec3 Ls;
   };*/
   shader->setUniform("light.position",m_lightPosition);
-  shader->setShaderParam3f("light.La",0.1,0.1,0.1);
-  shader->setShaderParam3f("light.Ld",1.0,1.0,1.0);
-  shader->setShaderParam3f("light.Ls",0.9,0.9,0.9);
+  shader->setUniform("light.La",0.1f,0.1f,0.1f);
+  shader->setUniform("light.Ld",1.0f,1.0f,1.0f);
+  shader->setUniform("light.Ls",0.9f,0.9f,0.9f);
  // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
@@ -280,8 +280,8 @@ void NGLScene::wheelEvent(QWheelEvent *_event)
 
 void NGLScene::keyPressEvent(QKeyEvent *_event)
 {
-  static float s_scale=200;
-  static float s_edge=0.2;
+  static float s_scale=200.0f;
+  static float s_edge=0.2f;
   ngl::ShaderLib *shader = ngl::ShaderLib::instance();
   shader->use("PerVertASD");
 
@@ -308,31 +308,30 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_Plus :
   {
     s_scale+=5;
-    shader->setShaderParam1f("scale",s_scale);
+    shader->setUniform("scale",s_scale);
   break;
   }
   case Qt::Key_Minus :
   {
     s_scale-=5;
-    shader->setShaderParam1f("scale",s_scale);
+    shader->setUniform("scale",s_scale);
   break;
   }
   case Qt::Key_1 :
   {
     s_edge-=0.1;
-    shader->setShaderParam1f("edge",s_edge);
+    shader->setUniform("edge",s_edge);
   break;
   }
   case Qt::Key_2 :
   {
     s_edge+=0.1;
-    shader->setShaderParam1f("edge",s_edge);
+    shader->setUniform("edge",s_edge);
   break;
   }
 
   default : break;
   }
   // finally update the GLWindow and re-draw
-  //if (isExposed())
-    update();
+  update();
 }

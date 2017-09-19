@@ -85,7 +85,7 @@ void NGLScene::initializeGL()
   (*shader)["MultipleLights"]->use();
   shader->autoRegisterUniforms("MultipleLights");
   shader->printRegisteredUniforms("MultipleLights");
-  shader->setShaderParam1f("Normalize",1);
+  shader->setUniform("Normalize",1.0f);
 
 
   // Now we will create a basic Camera from the graphics library
@@ -157,11 +157,11 @@ void NGLScene::loadMatricesToShader()
   normalMatrix=MV;
   normalMatrix.inverse();
   normalMatrix.transpose();
-  shader->setRegisteredUniform("MV",MV);
-  shader->setRegisteredUniform("M",M);
-  shader->setRegisteredUniform("MVP",MVP);
-  shader->setRegisteredUniform("normalMatrix",normalMatrix);
-  shader->setRegisteredUniform("viewerPos",m_cam.getEye().toVec3());
+  shader->setUniform("MV",MV);
+  shader->setUniform("M",M);
+  shader->setUniform("MVP",MVP);
+  shader->setUniform("normalMatrix",normalMatrix);
+  shader->setUniform("viewerPos",m_cam.getEye().toVec3());
 
 }
 

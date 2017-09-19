@@ -83,7 +83,7 @@ void NGLScene::initializeGL()
   shader->linkProgramObject("PointLightDiffuse");
   // and make it active ready to load values
   (*shader)["PointLightDiffuse"]->use();
-  shader->setShaderParam4f("diffuse",0.8,0.3,0.1,1.0);
+  shader->setUniform("diffuse",0.8f,0.3f,0.1f,1.0f);
 
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
@@ -121,8 +121,8 @@ void NGLScene::loadMatricesToShader()
   MVP=MV*m_cam.getProjectionMatrix() ;
   normalMatrix=MV;
   normalMatrix.inverse();
-  shader->setShaderParamFromMat4("MVP",MVP);
-  shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
+  shader->setUniform("MVP",MVP);
+  shader->setUniform("normalMatrix",normalMatrix);
 }
 
 void NGLScene::paintGL()

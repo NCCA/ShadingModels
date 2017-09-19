@@ -8,13 +8,13 @@ layout (location =0)out vec4 fragColour;
 
 void main ()
 {
-	if( gl_FrontFacing )
-	{
+  if( gl_FrontFacing )
+  {
 		fragColour=vec4(frontColour,1.0);
 	}
-	else
+  else
 	{
-		fragColour=vec4(backColour,1.0);
+    fragColour=vec4(backColour,1.0)*0.2;
 	}
 
 }

@@ -75,9 +75,9 @@ void main()
 	getEyeSpace(eyeNorm, eyePosition);
 	// Evaluate the lighting equation.
 	lightIntensity=vec3(0.0);
-	for(int i=0; i<20; ++i)
+  for(int i=0; i<2; ++i)
 	{
-		lightIntensity += phongModel( i,eyePosition, eyeNorm );
+    lightIntensity += phongModel( i,eyePosition, eyeNorm );
 	}
 	// Convert position to clip coordinates and pass along
 	gl_Position = MVP*vec4(inVert,1.0);

@@ -59,7 +59,7 @@ void main()
 	{
 		spec = light.Ls * material.Ks * pow( max( dot(r,v), 0.0 ), material.shininess );
 	}
-	lightIntensity = ambient;// + diffuse + spec;
+  lightIntensity = ambient+ diffuse + spec;
 
 	// Convert position to clip coordinates and pass along
 	gl_Position = MVP*vec4(inVert,1.0);

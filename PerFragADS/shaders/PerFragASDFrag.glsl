@@ -71,7 +71,7 @@ vec3 phongModelHalfVector( )
 
 void main ()
 {
-	fragColour=vec4(phongModel(),1.0);
+  fragColour=vec4(phongModelHalfVector(),1.0);
 }
 
 

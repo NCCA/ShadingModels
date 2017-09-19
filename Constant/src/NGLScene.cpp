@@ -36,13 +36,6 @@ NGLScene::~NGLScene()
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
 }
 
-void NGLScene::resizeGL(QResizeEvent *_event)
-{
-  m_width=_event->size().width()*devicePixelRatio();
-  m_height=_event->size().height()*devicePixelRatio();
-  // now set the camera size values as the screen size has changed
-  m_cam.setShape(45.0f,(float)width()/height(),0.05f,350.0f);
-}
 
 void NGLScene::resizeGL(int _w , int _h)
 {
@@ -81,7 +74,7 @@ void NGLScene::initializeGL()
   shader->linkProgramObject("Constant");
   // and make it active ready to load values
   (*shader)["Constant"]->use();
-  shader->setShaderParam4f("Colour",1.0f,0.0f,0.0f,1.0f);
+  shader->setUniform("Colour",1.0f,0.0f,0.0f,1.0f);
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
@@ -105,7 +98,7 @@ void NGLScene::loadMatricesToShader()
 
   ngl::Mat4 MVP;
   MVP=m_mouseGlobalTX*m_cam.getVPMatrix();
-  shader->setShaderParamFromMat4("MVP",MVP);
+  shader->setUniform("MVP",MVP);
 }
 
 void NGLScene::paintGL()

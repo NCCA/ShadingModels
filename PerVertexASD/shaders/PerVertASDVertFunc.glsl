@@ -62,7 +62,7 @@ vec3 phongModel( vec4 position, vec3 norm )
 	{
 		spec = light.Ls * material.Ks * pow( max( dot(r,v), 0.0 ), material.shininess );
 	}
-	return ambient + diffuse + spec;
+  return ambient + diffuse + spec;
 }
 
 void main()

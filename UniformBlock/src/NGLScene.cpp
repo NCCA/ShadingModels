@@ -155,12 +155,12 @@ void NGLScene::initializeGL()
         // Specular shininess factor
         float shininess;
   };*/
-  shader->setRegisteredUniform("material.Ka",0.4f,0.4f,0.4f);
+  shader->setUniform("material.Ka",0.4f,0.4f,0.4f);
   // red diffuse
-  shader->setRegisteredUniform("material.Kd",1.0f,1.0f,1.0f);
+  shader->setUniform("material.Kd",1.0f,1.0f,1.0f);
   // white spec
-  shader->setRegisteredUniform("material.Ks",1.0f,1.0f,1.0f);
-  shader->setRegisteredUniform("material.shininess",20.0f);
+  shader->setUniform("material.Ks",1.0f,1.0f,1.0f);
+  shader->setUniform("material.shininess",20.0f);
   // now for  the lights values (all set to white)
   /*struct LightInfo
   {
@@ -205,13 +205,17 @@ void NGLScene::initializeGL()
     // char name[50];
     // sprintf(name,"light[%d]",i);
     std::string name=boost::str(boost::format("light[%d]") % i );
-    shader->setRegisteredUniform(name+".position",positions[index],positions[index+1],positions[index+2]);
-    shader->setRegisteredUniform(name+".Ld",colours[index],colours[index+1],colours[index+2]);
-    shader->setRegisteredUniform(name+".Ls",colours[index],colours[index+1],colours[index+2]);
+    shader->setUniform(name+".position",positions[index],positions[index+1],positions[index+2]);
+    shader->setUniform(name+".Ld",colours[index],colours[index+1],colours[index+2]);
+    shader->setUniform(name+".Ls",colours[index],colours[index+1],colours[index+2]);
 
-    shader->setRegisteredUniform(name+".La",0.0f,0.0f,0.0f);
+    shader->setUniform(name+".La",0.0f,0.0f,0.0f);
 
     index+=3;
+  }
+  if (GLEW_ARB_program_interface_query)
+  {
+    std::cout<<"vertex program \n";
   }
   // grab the index into the shader block for the uniforms will use this
   // in the load matrices to shader routine.
@@ -229,9 +233,48 @@ void NGLScene::initializeGL()
   m_cam.set(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam.setShape(45,(float)720.0/576.0,0.05,350);
+  m_cam.setShape(45.0f,(float)720.0f/576.0f,0.05f,350.0f);
   ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
   prim->createTrianglePlane("plane",30,30,20,20,ngl::Vec3(0,1,0));
+  shader->printProperties();
+  shader->printRegisteredUniforms("MultipleLights");
+
+ /* {
+    auto prog=shader->getProgramID("MultipleLights");
+    GLint numBlocks = 0;
+    glGetProgramInterfaceiv(prog, GL_UNIFORM_BLOCK, GL_ACTIVE_RESOURCES, &numBlocks);
+    const GLenum blockProperties[1] = {GL_NUM_ACTIVE_VARIABLES};
+    const GLenum activeUnifProp[1] = {GL_ACTIVE_VARIABLES};
+    const GLenum unifProperties[3] = {GL_NAME_LENGTH, GL_TYPE , GL_LOCATION};
+
+    for(int blockIx = 0; blockIx < numBlocks; ++blockIx)
+    {
+      GLint numActiveUnifs = 0;
+      glGetProgramResourceiv(prog, GL_UNIFORM_BLOCK, blockIx, 1, blockProperties, 1, NULL, &numActiveUnifs);
+
+      if(!numActiveUnifs)
+        continue;
+
+      std::vector<GLint> blockUnifs(numActiveUnifs);
+      glGetProgramResourceiv(prog, GL_UNIFORM_BLOCK, blockIx, 1, activeUnifProp, numActiveUnifs, NULL, &blockUnifs[0]);
+
+      for(int unifIx = 0; unifIx < numActiveUnifs; ++unifIx)
+      {
+        GLint values[3];
+        glGetProgramResourceiv(prog, GL_UNIFORM, blockUnifs[unifIx], 3, unifProperties, 3, NULL, values);
+
+        //Get the name. Must use a std::vector rather than a std::string for C++03 standards issues.
+        //C++11 would let you use a std::string directly.
+        std::vector<char> nameData(values[0]);
+        glGetProgramResourceName(prog, GL_UNIFORM, blockUnifs[unifIx], nameData.size(), NULL, &nameData[0]);
+        std::string name(nameData.begin(), nameData.end() - 1);
+      }
+    }
+
+  }*/
+
+
+
 }
 
 
@@ -254,6 +297,7 @@ void NGLScene::loadMatricesToShader()
   glBufferData( GL_UNIFORM_BUFFER, sizeof(transform),t.MVP.openGL(),GL_DYNAMIC_DRAW );
   glBindBufferBase( GL_UNIFORM_BUFFER, m_transformsIndex, m_transformUboHandle );
   glUnmapBuffer(GL_UNIFORM_BUFFER);
+
 }
 
 void NGLScene::paintGL()

@@ -84,6 +84,7 @@ void NGLScene::initializeGL()
   shader->linkProgramObject("MultipleLights");
   // and make it active ready to load values
   (*shader)["MultipleLights"]->use();
+  shader->printRegisteredUniforms("MultipleLights");
   // now we need to set the material and light values
   /*
    *struct MaterialInfo
@@ -97,12 +98,12 @@ void NGLScene::initializeGL()
         // Specular shininess factor
         float shininess;
   };*/
-  shader->setShaderParam3f("material.Ka",0.4,0.4,0.4);
+  shader->setUniform("material.Ka",0.4f,0.4f,0.4f);
   // red diffuse
-  shader->setShaderParam3f("material.Kd",1,1,1);
+  shader->setUniform("material.Kd",1.0f,1.0f,1.0f);
   // white spec
-  shader->setShaderParam3f("material.Ks",1.0,1.0,1.0);
-  shader->setShaderParam1f("material.shininess",20);
+  shader->setUniform("material.Ks",1.0f,1.0f,1.0f);
+  shader->setUniform("material.shininess",20.0f);
   // now for  the lights values (all set to white)
   /*struct LightInfo
   {
@@ -147,11 +148,11 @@ void NGLScene::initializeGL()
     // char name[50];
     // sprintf(name,"light[%d]",i);
     std::string name=boost::str(boost::format("light[%d]") % i );
-    shader->setShaderParam3f(name+".position",positions[index],positions[index+1],positions[index+2]);
-    shader->setShaderParam3f(name+".Ld",colours[index],colours[index+1],colours[index+2]);
-    shader->setShaderParam3f(name+".Ls",colours[index],colours[index+1],colours[index+2]);
+    shader->setUniform(name+".position",positions[index],positions[index+1],positions[index+2]);
+    shader->setUniform(name+".Ld",colours[index],colours[index+1],colours[index+2]);
+    shader->setUniform(name+".Ls",colours[index],colours[index+1],colours[index+2]);
 
-    shader->setShaderParam3f(name+".La",0.0,0.0,0.0);
+    shader->setUniform(name+".La",0.0f,0.0f,0.0f);
 
     index+=3;
   }
@@ -218,7 +219,7 @@ void NGLScene::paintGL()
 
   loadMatricesToShader();
   prim->draw("teapot");
-  m_transform.setPosition(0,-0.45,0);
+  m_transform.setPosition(0,-0.45f,0);
   loadMatricesToShader();
   prim->draw("plane");
 
