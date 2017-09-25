@@ -1,3 +1,3 @@
-#PointLightDiffuse
+# PointLightDiffuse
 
 Point light diffuse shading
