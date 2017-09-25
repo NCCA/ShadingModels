@@ -97,7 +97,7 @@ void NGLScene::loadMatricesToShader()
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
 
   ngl::Mat4 MVP;
-  MVP=m_mouseGlobalTX*m_cam.getVPMatrix();
+  MVP=m_cam.getVPMatrix()*m_mouseGlobalTX;
   shader->setUniform("MVP",MVP);
 }
 
@@ -121,7 +121,7 @@ void NGLScene::paintGL()
   rotX.rotateX(m_spinXFace);
   rotY.rotateY(m_spinYFace);
   // multiply the rotations
-  m_mouseGlobalTX=rotY*rotX;
+  m_mouseGlobalTX=rotX*rotY;
   // add the translations
   m_mouseGlobalTX.m_m[3][0] = m_modelPos.m_x;
   m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;

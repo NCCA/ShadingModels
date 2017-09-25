@@ -31,12 +31,9 @@ struct Lights
 		vec4 ambient;
 		vec4 diffuse;
 		vec4 specular;
-		float spotCosCutoff;
-		float spotCosInnerCutoff;
-		float spotExponent;
-		float constantAttenuation;
-		float linearAttenuation;
-		float quadraticAttenuation;
+    float spotCosCutoff;
+    float spotCosInnerCutoff;
+    float spotExponent;
 };
 // @param material passed from our program
 uniform Materials material;
@@ -76,14 +73,10 @@ vec4 directionalLight(int _lightNum)
 		// Compute distance between surface and light position
 		d = length (VP);
 
-		attenuation = 1.f / (light[_lightNum].constantAttenuation +
-												 light[_lightNum].linearAttenuation * d +
-												 light[_lightNum].quadraticAttenuation * d * d);
-
-		pf=clamp(nDotVP,0.0,pow(nDotHV,material.shininess))* attenuation;
-		vec4 ambient=light[_lightNum].ambient*material.ambient* attenuation;
-		vec4 diffuse=light[_lightNum].diffuse*material.diffuse*nDotVP* attenuation;
-		vec4 specular=light[_lightNum].specular*material.specular*pf* attenuation;
+    pf=clamp(nDotVP,0.0,pow(nDotHV,material.shininess));
+    vec4 ambient=light[_lightNum].ambient*material.ambient;
+    vec4 diffuse=light[_lightNum].diffuse*material.diffuse*nDotVP;
+    vec4 specular=light[_lightNum].specular*material.specular*pf;
 		return ambient + diffuse + specular;
 
 }
@@ -113,15 +106,11 @@ vec4 pointLight(int _lightNum)
 
 	// Compute distance between surface and light position
 		d = length (VP);
-		attenuation = 1.f / (light[_lightNum].constantAttenuation +
-											 light[_lightNum].linearAttenuation * d +
-											 light[_lightNum].quadraticAttenuation * d * d);
-
-		diffuse+=material.diffuse*light[_lightNum].diffuse*lambertTerm*attenuation;
-		ambient+=material.ambient*light[_lightNum].ambient*attenuation;
+    diffuse+=material.diffuse*light[_lightNum].diffuse*lambertTerm;
+    ambient+=material.ambient*light[_lightNum].ambient;
 		halfV = normalize(halfVector[_lightNum]);
 		ndothv = max(dot(N, halfV), 0.0);
-		specular+=material.specular*light[_lightNum].specular*pow(ndothv, material.shininess)* attenuation;
+    specular+=material.specular*light[_lightNum].specular*pow(ndothv, material.shininess);
 	}
 return ambient + diffuse + specular;
 }

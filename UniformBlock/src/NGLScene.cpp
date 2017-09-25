@@ -288,10 +288,12 @@ void NGLScene::loadMatricesToShader()
   };
 
   transform t;
-  t.MV=m_transform.getMatrix()*m_mouseGlobalTX*m_cam.getViewMatrix();
-  t.MVP=t.MV*m_cam.getProjectionMatrix();
+  t.MV=m_cam.getViewMatrix()*
+       m_mouseGlobalTX*
+       m_transform.getMatrix();
+  t.MVP=m_cam.getProjectionMatrix()*t.MV;
   t.normalMatrix=t.MV;
-  t.normalMatrix.inverse();
+  t.normalMatrix.inverse().transpose();
   std::cout<<"transformUBO ID "<<m_transformUboHandle<<"\n";
   glBindBuffer( GL_UNIFORM_BUFFER, m_transformUboHandle );
   glBufferData( GL_UNIFORM_BUFFER, sizeof(transform),t.MVP.openGL(),GL_DYNAMIC_DRAW );

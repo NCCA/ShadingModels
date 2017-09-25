@@ -14,11 +14,11 @@
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
 //----------------------------------------------------------------------------------------------------------------------
-const static float INCREMENT=0.01;
+const static float INCREMENT=0.01f;
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for the wheel zoom
 //----------------------------------------------------------------------------------------------------------------------
-const static float ZOOM=0.1;
+const static float ZOOM=0.1f;
 
 NGLScene::NGLScene()
 {
@@ -110,10 +110,10 @@ void NGLScene::initializeGL()
 
   // build the material for our shading model
   ngl::Material m;
-  m.setAmbient(ngl::Colour(0.1,0.1,0.1,1.0));
-  m.setDiffuse(ngl::Colour(1.0,0.4,0.1));
-  m.setSpecular(ngl::Colour(1,1,1));
-  m.setSpecularExponent(80);
+  m.setAmbient(ngl::Colour(0.1f,0.1f,0.1f,1.0f));
+  m.setDiffuse(ngl::Colour(1.0f,0.4f,0.1f));
+  m.setSpecular(ngl::Colour(1.0f,1.0f,1.0f));
+  m.setSpecularExponent(80.0f);
   m.loadToShader("material");
   m_text.reset(  new  ngl::Text(QFont("Arial",14)));
   m_text->setScreenSize(width(),height());
@@ -130,10 +130,10 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat3 normalMatrix;
   ngl::Mat4 M;
   M=m_mouseGlobalTX;
-  MV=M*m_cam.getViewMatrix() ;
-  MVP=MV*m_cam.getProjectionMatrix();
+  MV=m_cam.getViewMatrix()*M ;
+  MVP=m_cam.getProjectionMatrix()*MV;
   normalMatrix=MV;
-  normalMatrix.inverse();
+  normalMatrix.inverse().transpose();
   shader->setUniform("MV",MV);
   shader->setUniform("M",M);
   shader->setUniform("MVP",MVP);
