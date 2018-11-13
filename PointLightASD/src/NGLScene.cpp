@@ -2,10 +2,7 @@
 #include <QGuiApplication>
 #include <QFont>
 #include "NGLScene.h"
-#include <ngl/Camera.h>
-#include <ngl/Light.h>
 #include <ngl/Transformation.h>
-#include <ngl/Material.h>
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
@@ -14,11 +11,11 @@
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
 //----------------------------------------------------------------------------------------------------------------------
-const static float INCREMENT=0.01;
+const static float INCREMENT=0.01f;
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for the wheel zoom
 //----------------------------------------------------------------------------------------------------------------------
-const static float ZOOM=0.1;
+const static float ZOOM=0.1f;
 
 NGLScene::NGLScene()
 {
@@ -38,17 +35,10 @@ NGLScene::~NGLScene()
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
 }
 
-void NGLScene::resizeGL(QResizeEvent *_event)
-{
-  m_width=_event->size().width()*devicePixelRatio();
-  m_height=_event->size().height()*devicePixelRatio();
-  // now set the camera size values as the screen size has changed
-  m_cam.setShape(45.0f,(float)width()/height(),0.05f,350.0f);
-}
 
 void NGLScene::resizeGL(int _w , int _h)
 {
-  m_cam.setShape(45.0f,(float)_w/_h,0.05f,350.0f);
+  m_project=ngl::perspective(45.0f,(float)_w/_h,0.05f,350.0f);
   m_width=_w*devicePixelRatio();
   m_height=_h*devicePixelRatio();
 }
@@ -84,39 +74,31 @@ void NGLScene::initializeGL()
   shader->linkProgramObject("PointLightDiffuse");
   // and make it active ready to load values
   (*shader)["PointLightDiffuse"]->use();
+
+
+  ngl::Vec4 lightPos(-2.0f,5.0f,2.0f,0.0f);
+  shader->setUniform("light.position",lightPos);
+  shader->setUniform("light.ambient",0.0f,0.0f,0.0f,1.0f);
+  shader->setUniform("light.diffuse",1.0f,1.0f,1.0f,1.0f);
+  shader->setUniform("light.specular",0.8f,0.8f,0.8f,1.0f);
+  // gold like phong material
+  shader->setUniform("material.ambient",0.274725f,0.1995f,0.0745f,0.0f);
+  shader->setUniform("material.diffuse",0.75164f,0.60648f,0.22648f,0.0f);
+  shader->setUniform("material.specular",0.628281f,0.555802f,0.3666065f,0.0f);
+  shader->setUniform("material.shininess",51.2f);
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
-  ngl::Vec3 from(0,0,2);
+  m_eye.set(0,0,3);
   ngl::Vec3 to(0,0,0);
   ngl::Vec3 up(0,1,0);
   // now load to our new camera
-  m_cam.set(from,to,up);
+  m_view=ngl::lookAt(m_eye,to,up);
+  shader->setUniform("viewerPos",m_eye);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam.setShape(45,(float)720.0/576.0,0.05,350);
+  m_project=ngl::perspective(45,720.0f/576.0f,0.05f,350);
 
-  // now create our light we need to do this after the camera as we need to
-  // load the projection to the light transform
-  m_light.reset( new ngl::Light(m_lightPosition,ngl::Colour(1,1,1,1),ngl::LightModes::POINTLIGHT));
-  ngl::Mat4 iv=m_cam.getViewMatrix();
-  iv.transpose();
-  // we load the transpose of the projection matrix to the light, the light
-  // position is then transformed by the matrix before being loaded to the
-  // shader
-  m_light->setTransform(iv);
-  // load these values to the shader as well
-  m_light->loadToShader("light");
-
-
-
-  // build the material for our shading model
-  ngl::Material m;
-  m.setAmbient(ngl::Colour(0.1,0.1,0.1,1.0));
-  m.setDiffuse(ngl::Colour(1.0,0.4,0.1));
-  m.setSpecular(ngl::Colour(1,1,1));
-  m.setSpecularExponent(80);
-  m.loadToShader("material");
   m_text.reset(  new  ngl::Text(QFont("Arial",14)));
   m_text->setScreenSize(width(),height());
   glViewport(0,0,width(),height());
@@ -131,15 +113,16 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
   ngl::Mat4 M;
-  MV=m_cam.getViewMatrix()*m_mouseGlobalTX*M;
-  MVP=m_cam.getProjectionMatrix()*MV;
+  MV=m_view*m_mouseGlobalTX*M;
+  MVP=m_project*MV;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
   shader->setUniform("MV",MV);
   shader->setUniform("M",M);
   shader->setUniform("MVP",MVP);
   shader->setUniform("normalMatrix",normalMatrix);
-  shader->setUniform("viewerPos",m_cam.getEye().toVec3());
+  shader->setUniform("viewerPos",m_eye);
+  shader->setUniform("light.position",m_lightPosition);
 }
 
 void NGLScene::paintGL()
@@ -150,8 +133,6 @@ void NGLScene::paintGL()
   // grab an instance of the shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   (*shader)["PointLightDiffuse"]->use();
-  m_light->setPosition(m_lightPosition);
-  m_light->loadToShader("light");
 
   // Rotation based on the mouse position for our global transform
   ngl::Transformation trans;
@@ -175,9 +156,9 @@ void NGLScene::paintGL()
 
   prim->draw("teapot");
   // now render the text using the QT renderText helper function
-  m_text->setColour(ngl::Colour(1,1,1));
+  m_text->setColour(1,1,1);
   m_text->renderText(10,18,"Use Arrow Keys to move Light i and o to move in and out");
-  m_text->setColour(ngl::Colour(1,1,0));
+  m_text->setColour(1,1,0);
 
   QString text=QString("Light Position [%1,%2,%3]")
                       .arg(m_lightPosition.m_x,4,'f',1,'0')

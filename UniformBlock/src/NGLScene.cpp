@@ -2,9 +2,6 @@
 #include <QGuiApplication>
 #include <QFont>
 #include "NGLScene.h"
-#include <ngl/Camera.h>
-#include <ngl/Light.h>
-#include <ngl/Material.h>
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
@@ -14,11 +11,11 @@
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
 //----------------------------------------------------------------------------------------------------------------------
-const static float INCREMENT=0.01;
+const static float INCREMENT=0.01f;
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for the wheel zoom
 //----------------------------------------------------------------------------------------------------------------------
-const static float ZOOM=0.1;
+const static float ZOOM=0.1f;
 
 NGLScene::NGLScene()
 {
@@ -32,74 +29,16 @@ NGLScene::NGLScene()
 }
 
 
-void APIENTRY openglCallbackFunction(GLenum source,
-                                           GLenum type,
-                                           GLuint id,
-                                           GLenum severity,
-                                           GLsizei length,
-                                           const GLchar* message,
-                                           const void* userParam){
-
-    std::cout << "---------------------opengl-callback-start------------" << std::endl;
-    std::cout << "message: "<< message << std::endl;
-    std::cout << "type: ";
-    switch (type) {
-    case GL_DEBUG_TYPE_ERROR:
-        std::cout << "ERROR";
-        break;
-    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-        std::cout << "DEPRECATED_BEHAVIOR";
-        break;
-    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-        std::cout << "UNDEFINED_BEHAVIOR";
-        break;
-    case GL_DEBUG_TYPE_PORTABILITY:
-        std::cout << "PORTABILITY";
-        break;
-    case GL_DEBUG_TYPE_PERFORMANCE:
-        std::cout << "PERFORMANCE";
-        break;
-    case GL_DEBUG_TYPE_OTHER:
-        std::cout << "OTHER";
-        break;
-    }
-    std::cout << std::endl;
-
-    std::cout << "id: " << id << std::endl;
-    std::cout << "severity: ";
-    switch (severity){
-    case GL_DEBUG_SEVERITY_LOW:
-        std::cout << "LOW";
-        break;
-    case GL_DEBUG_SEVERITY_MEDIUM:
-        std::cout << "MEDIUM";
-        break;
-    case GL_DEBUG_SEVERITY_HIGH:
-        std::cout << "HIGH";
-        break;
-    }
-    std::cout << std::endl;
-    std::cout << "---------------------opengl-callback-end--------------" << std::endl;
-}
-
-
 
 NGLScene::~NGLScene()
 {
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
 }
 
-void NGLScene::resizeGL(QResizeEvent *_event)
-{
-  m_width=_event->size().width()*devicePixelRatio();
-  m_height=_event->size().height()*devicePixelRatio();
-  // now set the camera size values as the screen size has changed
-  m_cam.setShape(45.0f,(float)width()/height(),0.05f,350.0f);
-}
 
 void NGLScene::resizeGL(int _w , int _h)
 {
-  m_cam.setShape(45.0f,(float)_w/_h,0.05f,350.0f);
+  m_view=ngl::perspective(45.0f,(float)_w/_h,0.05f,350.0f);
   m_width=_w*devicePixelRatio();
   m_height=_h*devicePixelRatio();
 }
@@ -213,10 +152,7 @@ void NGLScene::initializeGL()
 
     index+=3;
   }
-  if (GLEW_ARB_program_interface_query)
-  {
-    std::cout<<"vertex program \n";
-  }
+
   // grab the index into the shader block for the uniforms will use this
   // in the load matrices to shader routine.
   m_transformsIndex = shader->getUniformBlockIndex("transforms");
@@ -230,51 +166,14 @@ void NGLScene::initializeGL()
   ngl::Vec3 to(0,0,0);
   ngl::Vec3 up(0,1,0);
   // now load to our new camera
-  m_cam.set(from,to,up);
+  m_view=ngl::lookAt(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam.setShape(45.0f,(float)720.0f/576.0f,0.05f,350.0f);
+ m_project=ngl::perspective(45.0f,(float)720.0f/576.0f,0.05f,350.0f);
   ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
   prim->createTrianglePlane("plane",30,30,20,20,ngl::Vec3(0,1,0));
   shader->printProperties();
   shader->printRegisteredUniforms("MultipleLights");
-
- /* {
-    auto prog=shader->getProgramID("MultipleLights");
-    GLint numBlocks = 0;
-    glGetProgramInterfaceiv(prog, GL_UNIFORM_BLOCK, GL_ACTIVE_RESOURCES, &numBlocks);
-    const GLenum blockProperties[1] = {GL_NUM_ACTIVE_VARIABLES};
-    const GLenum activeUnifProp[1] = {GL_ACTIVE_VARIABLES};
-    const GLenum unifProperties[3] = {GL_NAME_LENGTH, GL_TYPE , GL_LOCATION};
-
-    for(int blockIx = 0; blockIx < numBlocks; ++blockIx)
-    {
-      GLint numActiveUnifs = 0;
-      glGetProgramResourceiv(prog, GL_UNIFORM_BLOCK, blockIx, 1, blockProperties, 1, NULL, &numActiveUnifs);
-
-      if(!numActiveUnifs)
-        continue;
-
-      std::vector<GLint> blockUnifs(numActiveUnifs);
-      glGetProgramResourceiv(prog, GL_UNIFORM_BLOCK, blockIx, 1, activeUnifProp, numActiveUnifs, NULL, &blockUnifs[0]);
-
-      for(int unifIx = 0; unifIx < numActiveUnifs; ++unifIx)
-      {
-        GLint values[3];
-        glGetProgramResourceiv(prog, GL_UNIFORM, blockUnifs[unifIx], 3, unifProperties, 3, NULL, values);
-
-        //Get the name. Must use a std::vector rather than a std::string for C++03 standards issues.
-        //C++11 would let you use a std::string directly.
-        std::vector<char> nameData(values[0]);
-        glGetProgramResourceName(prog, GL_UNIFORM, blockUnifs[unifIx], nameData.size(), NULL, &nameData[0]);
-        std::string name(nameData.begin(), nameData.end() - 1);
-      }
-    }
-
-  }*/
-
-
-
 }
 
 
@@ -288,10 +187,10 @@ void NGLScene::loadMatricesToShader()
   };
 
   transform t;
-  t.MV=m_cam.getViewMatrix()*
+  t.MV=m_view*
        m_mouseGlobalTX*
        m_transform.getMatrix();
-  t.MVP=m_cam.getProjectionMatrix()*t.MV;
+  t.MVP=m_project*t.MV;
   t.normalMatrix=t.MV;
   t.normalMatrix.inverse().transpose();
   std::cout<<"transformUBO ID "<<m_transformUboHandle<<"\n";

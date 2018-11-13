@@ -1,8 +1,7 @@
-#ifndef NGLSCENE_H__
-#define NGLSCENE_H__
-#include <ngl/Camera.h>
-#include <ngl/Colour.h>
-#include <ngl/Light.h>
+#ifndef NGLSCENE_H_
+#define NGLSCENE_H_
+#include <ngl/Mat4.h>
+#include <ngl/Vec3.h>
 #include <ngl/Text.h>
 #include <QOpenGLWindow>
 #include <memory>
@@ -44,9 +43,6 @@ class NGLScene : public QOpenGLWindow
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief this is called everytime we resize
     //----------------------------------------------------------------------------------------------------------------------
-    // Qt 5.5.1 must have this implemented and uses it
-    void resizeGL(QResizeEvent *_event);
-    // Qt 5.x uses this instead! http://doc.qt.io/qt-5/qopenglwindow.html#resizeGL
     void resizeGL(int _w, int _h);
 
 private:
@@ -97,7 +93,8 @@ private:
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief Our Camera
     //----------------------------------------------------------------------------------------------------------------------
-    ngl::Camera m_cam;
+    ngl::Mat4 m_view;
+    ngl::Mat4 m_project;
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief the model position for mouse movement
     //----------------------------------------------------------------------------------------------------------------------

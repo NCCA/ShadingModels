@@ -5,24 +5,16 @@ in vec3 fragmentNormal;
 /// @brief our output fragment colour
 layout (location =0)out vec4 fragColour;
 // @brief light structure
-struct Lights
+struct Light
 {
-    vec4 position;
-    vec4 ambient;
+    vec3 position;
     vec4 diffuse;
-    vec4 specular;
-    float spotCosCutoff;
-    float spotCosInnerCutoff;
-    float spotExponent;
-    float constantAttenuation;
-    float linearAttenuation;
-    float quadraticAttenuation;
 };
 
 
 uniform vec4 diffuse;
 
-uniform Lights light;
+uniform Light light;
 
 void main ()
 {
@@ -32,7 +24,7 @@ void main ()
     vec3 N = normalize(fragmentNormal);
     // The Light source vector
     // get the Light vector
-    vec3 L = normalize(light.position.xyz);
+    vec3 L = normalize(light.position);
     // calculate diffuse based on Lambert's law (L.N)
     fragColour += diffuse  *light.diffuse * dot(L, N);
 

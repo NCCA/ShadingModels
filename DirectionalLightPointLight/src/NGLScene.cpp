@@ -2,10 +2,7 @@
 #include <QGuiApplication>
 #include <QFont>
 #include "NGLScene.h"
-#include <ngl/Camera.h>
-#include <ngl/Light.h>
 #include <ngl/Transformation.h>
-#include <ngl/Material.h>
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
@@ -14,7 +11,7 @@
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
 //----------------------------------------------------------------------------------------------------------------------
-const static float INCREMENT=0.01;
+const static float INCREMENT=0.01f;
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for the wheel zoom
 //----------------------------------------------------------------------------------------------------------------------
@@ -38,17 +35,11 @@ NGLScene::~NGLScene()
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
 }
 
-void NGLScene::resizeGL(QResizeEvent *_event)
-{
-  m_width=_event->size().width()*devicePixelRatio();
-  m_height=_event->size().height()*devicePixelRatio();
-  // now set the camera size values as the screen size has changed
-  m_cam.setShape(45.0f,(float)width()/height(),0.05f,350.0f);
-}
+
 
 void NGLScene::resizeGL(int _w , int _h)
 {
-  m_cam.setShape(45.0f,(float)_w/_h,0.05f,350.0f);
+  m_project=ngl::perspective(45.0f,(float)width()/height(),0.05f,350.0f);
   m_width=_w*devicePixelRatio();
   m_height=_h*devicePixelRatio();
 }
@@ -125,14 +116,14 @@ void NGLScene::initializeGL()
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
-  ngl::Vec3 from(0,1,1);
+  ngl::Vec3 from(0,1,2);
   ngl::Vec3 to(0,0,0);
   ngl::Vec3 up(0,1,0);
   // now load to our new camera
-  m_cam.set(from,to,up);
+  m_view=ngl::lookAt(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam.setShape(45,(float)720.0/576.0,0.05,350);
+  m_project=ngl::perspective(45,720.0f/576.0f,0.05f,350);
   m_text.reset(  new  ngl::Text(QFont("Arial",14)));
   m_text->setScreenSize(width(),height());
 
@@ -148,8 +139,8 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat3 normalMatrix;
   ngl::Mat4 M;
   M=m_transform.getMatrix();
-  MV= m_cam.getViewMatrix()*M;
-  MVP=m_cam.getProjectionMatrix() *MV;
+  MV= m_view*M;
+  MVP=m_project*MV;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
   shader->setUniform("MVP",MVP);
@@ -187,9 +178,9 @@ void NGLScene::paintGL()
   loadMatricesToShader();
   prim->draw("teapot");
   // now render the text using the QT renderText helper function
-   m_text->setColour(ngl::Colour(1,1,1));
+   m_text->setColour(ngl::Vec3(1,1,1));
    m_text->renderText(10,18,"Use Arrow Keys to move Light i and o to move in and out P & D for Light Type");
-   m_text->setColour(ngl::Colour(1,1,0));
+   m_text->setColour(ngl::Vec3(1,1,0));
 
    QString text=QString("Light Position [%1,%2,%3] %4")
                        .arg(m_lightPos.m_x,4,'f',1,'0')

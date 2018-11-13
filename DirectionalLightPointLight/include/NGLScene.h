@@ -1,10 +1,9 @@
-#ifndef NGLSCENE_H__
-#define NGLSCENE_H__
-#include <ngl/Camera.h>
-#include <ngl/Colour.h>
-#include <ngl/Light.h>
+#ifndef NGLSCENE_H_
+#define NGLSCENE_H_
 #include <ngl/Text.h>
 #include <ngl/Transformation.h>
+#include <ngl/Vec3.h>
+#include <ngl/Mat4.h>
 #include <QOpenGLWindow>
 #include <memory>
 
@@ -95,7 +94,8 @@ private:
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief Our Camera
     //----------------------------------------------------------------------------------------------------------------------
-    ngl::Camera m_cam;
+    ngl::Mat4 m_view;
+    ngl::Mat4 m_project;
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief transformation stack for the gl transformations etc
     //----------------------------------------------------------------------------------------------------------------------

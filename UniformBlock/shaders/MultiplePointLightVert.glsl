@@ -3,16 +3,16 @@
 /// @brief the vertex passed in
 layout (location =0) in vec3 inVert;
 /// @brief the normal passed in
-layout (location =2) in vec3 inNormal;
+layout (location =1) in vec3 inNormal;
 /// @brief the in uv
-layout( location=1)in vec2 inUV;
+layout( location=2)in vec2 inUV;
 
 
 layout (std140) uniform transforms
 {
 	mat4 MVP;
 	mat4 MV;
-	mat3 normalMatrix;
+  mat4 normalMatrix;
 };
 
 
@@ -50,7 +50,7 @@ out vec3 lightIntensity;
 
 void getEyeSpace(out vec3 norm, out vec4 position)
 {
-	norm = normalize(  normalMatrix * inNormal);
+  norm = normalize( mat3( normalMatrix )* inNormal);
 	position = MV * vec4(inVert,1.0);
 }
 

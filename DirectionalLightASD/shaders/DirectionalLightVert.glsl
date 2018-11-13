@@ -3,9 +3,9 @@
 /// @brief the vertex passed in
 layout(location =0) in vec3 inVert;
 /// @brief the normal passed in
-layout(location =2) in vec3 inNormal;
+layout(location =1) in vec3 inNormal;
 /// @brief the in uv
-layout(location =1) in vec2 inUV;
+layout(location =2) in vec2 inUV;
 
 
 /// @brief flag to indicate if model has unit normals if not normalize
@@ -21,12 +21,6 @@ struct Lights
 	vec4 ambient;
 	vec4 diffuse;
 	vec4 specular;
-	float spotCosCutoff;
-	float spotCosInnerCutoff;
-	float spotExponent;
-	float constantAttenuation;
-	float linearAttenuation;
-	float quadraticAttenuation;
 
 };
 // array of lights

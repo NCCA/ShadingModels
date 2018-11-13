@@ -21,13 +21,6 @@ struct Lights
 	vec4 ambient;
 	vec4 diffuse;
 	vec4 specular;
-	float spotCosCutoff;
-	float spotCosInnerCutoff;
-	float spotExponent;
-	float constantAttenuation;
-	float linearAttenuation;
-	float quadraticAttenuation;
-
 };
 // @param material passed from our program
 uniform Materials material;
@@ -77,10 +70,10 @@ void directionalLight(
 
 void main ()
 {
-vec4 ambient=vec4(0.0);
-vec4 diffuse=vec4(0.0);
-vec4 specular=vec4(0.0);
-directionalLight(fragmentNormal,ambient,diffuse,specular);
-fragColour=ambient+diffuse+specular;
+  vec4 ambient=vec4(0.0);
+  vec4 diffuse=vec4(0.0);
+  vec4 specular=vec4(0.0);
+  directionalLight(fragmentNormal,ambient,diffuse,specular);
+  fragColour=ambient+diffuse+specular;
 }
 

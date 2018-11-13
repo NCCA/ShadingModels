@@ -2,10 +2,7 @@
 #include <QGuiApplication>
 #include <QFont>
 #include "NGLScene.h"
-#include <ngl/Camera.h>
-#include <ngl/Light.h>
 #include <ngl/Transformation.h>
-#include <ngl/Material.h>
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
@@ -38,17 +35,11 @@ NGLScene::~NGLScene()
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
 }
 
-void NGLScene::resizeGL(QResizeEvent *_event)
-{
-  m_width=_event->size().width()*devicePixelRatio();
-  m_height=_event->size().height()*devicePixelRatio();
-  // now set the camera size values as the screen size has changed
-  m_cam.setShape(45.0f,(float)width()/height(),0.05f,350.0f);
-}
+
 
 void NGLScene::resizeGL(int _w , int _h)
 {
-  m_cam.setShape(45.0f,(float)_w/_h,0.05f,350.0f);
+  m_project=ngl::perspective(45.0f,(float)_w/_h,0.05f,350.0f);
   m_width=_w*devicePixelRatio();
   m_height=_h*devicePixelRatio();
 }
@@ -88,33 +79,29 @@ void NGLScene::initializeGL()
   m_subroutines[1] = glGetSubroutineIndex(id, GL_FRAGMENT_SHADER, "pointLight");
   std::cout<<"subs "<<m_subroutines[0]<<" "<<m_subroutines[1]<<"\n";
 
-
-  //shader->setShaderParam4f("diffuse",0.8,0.3,0.1,1.0);
-  ngl::Light l1(ngl::Vec3(2,2,2),ngl::Colour(1,1,1),ngl::LightModes::POINTLIGHT);
-  l1.loadToShader("light");
+  ngl::Vec4 lightPos(2.0f,2.0f,1.0f,1.0f);
+  shader->setUniform("light.position",lightPos);
+  shader->setUniform("light.ambient",0.0f,0.0f,0.0f,1.0f);
+  shader->setUniform("light.diffuse",1.0f,1.0f,1.0f,1.0f);
+  shader->setUniform("light.specular",0.8f,0.8f,0.8f,1.0f);
+  // gold like phong material
+  shader->setUniform("material.ambient",0.274725f,0.1995f,0.0745f,0.0f);
+  shader->setUniform("material.diffuse",0.75164f,0.60648f,0.22648f,0.0f);
+  shader->setUniform("material.specular",0.628281f,0.555802f,0.3666065f,0.0f);
+  shader->setUniform("material.shininess",51.2f);
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
-  ngl::Vec3 from(0,1,1);
+  ngl::Vec3 from(0,2,2);
   ngl::Vec3 to(0,0,0);
   ngl::Vec3 up(0,1,0);
+  shader->setUniform("viewerPos",from);
   // now load to our new camera
-  m_cam.set(from,to,up);
+  m_view=ngl::lookAt(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam.setShape(45,(float)720.0/576.0,0.05,350);
-  // now create our light we need to do this after the camera is created
-  // as we need to load the transpose of the projection matrix to the
-  // light as the shader calculations are done in eye space
-  ngl::Mat4 iv=m_cam.getViewMatrix();
-  iv.transpose();
-  ngl::Light light(ngl::Vec3(2,4,2),ngl::Colour(1,1,1,1),ngl::LightModes::POINTLIGHT);
-  // load the iv to the shader for transform
-  light.setTransform(iv);
-  // load these values to the shader as well
-  light.loadToShader("light");
-  ngl::Material m(ngl::STDMAT::GOLD);
-  m.loadToShader("material");
+  m_project=ngl::perspective(45,720.0f/576.0f,0.05f ,350);
+
 }
 
 
@@ -131,8 +118,8 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
-  MV= m_cam.getViewMatrix()*m_mouseGlobalTX;
-  MVP=m_cam.getProjectionMatrix() *MV;
+  MV= m_view*m_mouseGlobalTX;
+  MVP=m_project *MV;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
   shader->setUniform("MVP",MVP);

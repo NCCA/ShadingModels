@@ -21,12 +21,6 @@ struct Lights
 	vec4 ambient;
 	vec4 diffuse;
 	vec4 specular;
-	float spotCosCutoff;
-	float spotCosInnerCutoff;
-	float spotExponent;
-	float constantAttenuation;
-	float linearAttenuation;
-	float quadraticAttenuation;
 };
 // @param material passed from our program
 uniform Materials material;
