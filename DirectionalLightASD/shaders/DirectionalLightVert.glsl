@@ -58,7 +58,7 @@ void main()
  vec4 eyeCord=MV*vec4(inVert,1);
 
  lightDir=vec3(light.position.xyz-eyeCord.xyz);
- vec4 worldPosition = M * vec4(inVert, 1.0);
+ vec4 worldPosition = MV * vec4(inVert, 1.0);
  eyeDirection = normalize(viewerPos - worldPosition.xyz);
 
  float dist;
