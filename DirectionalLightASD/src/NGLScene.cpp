@@ -47,34 +47,31 @@ void NGLScene::initializeGL()
 {
   // we must call this first before any other GL commands to load and link the
   // gl commands from the lib, if this is not done program will crash
-  ngl::NGLInit::instance();
+  ngl::NGLInit::initialize();
 
   glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_MULTISAMPLE);
-  // now to load the shader and set the values
-  // grab an instance of shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   // we are creating a shader called DirectionalLight
-  shader->createShaderProgram("DirectionalLight");
+  ngl::ShaderLib::createShaderProgram("DirectionalLight");
   // now we are going to create empty shaders for Frag and Vert
-  shader->attachShader("DirectionalLightVertex",ngl::ShaderType::VERTEX);
-  shader->attachShader("DirectionalLightFragment",ngl::ShaderType::FRAGMENT);
+  ngl::ShaderLib::attachShader("DirectionalLightVertex",ngl::ShaderType::VERTEX);
+  ngl::ShaderLib::attachShader("DirectionalLightFragment",ngl::ShaderType::FRAGMENT);
   // attach the source
-  shader->loadShaderSource("DirectionalLightVertex","shaders/DirectionalLightVert.glsl");
-  shader->loadShaderSource("DirectionalLightFragment","shaders/DirectionalLightFrag.glsl");
+  ngl::ShaderLib::loadShaderSource("DirectionalLightVertex","shaders/DirectionalLightVert.glsl");
+  ngl::ShaderLib::loadShaderSource("DirectionalLightFragment","shaders/DirectionalLightFrag.glsl");
   // compile the shaders
-  shader->compileShader("DirectionalLightVertex");
-  shader->compileShader("DirectionalLightFragment");
+  ngl::ShaderLib::compileShader("DirectionalLightVertex");
+  ngl::ShaderLib::compileShader("DirectionalLightFragment");
   // add them to the program
-  shader->attachShaderToProgram("DirectionalLight","DirectionalLightVertex");
-  shader->attachShaderToProgram("DirectionalLight","DirectionalLightFragment");
+  ngl::ShaderLib::attachShaderToProgram("DirectionalLight","DirectionalLightVertex");
+  ngl::ShaderLib::attachShaderToProgram("DirectionalLight","DirectionalLightFragment");
 
   // now we have associated this data we can link the shader
-  shader->linkProgramObject("DirectionalLight");
+  ngl::ShaderLib::linkProgramObject("DirectionalLight");
   // and make it active ready to load values
-  (*shader)["DirectionalLight"]->use();
+  ngl::ShaderLib::use("DirectionalLight");
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
@@ -94,29 +91,26 @@ void NGLScene::initializeGL()
   m_light.specular.set(0.2f,0.2f,0.2f,1.0f);
   m_light.diffuse.set(1.0f,1.0f,1.0f,1.0f);
   m_light.position=m_view*ngl::Vec4(-2.0f,2.0,3.0f,1.0f);
-  shader->setUniform("light.ambient",m_light.ambient);
-  shader->setUniform("light.diffuse",m_light.diffuse);
-  shader->setUniform("light.specular",m_light.specular);
-  shader->setUniform("light.position",m_light.position);
+  ngl::ShaderLib::setUniform("light.ambient",m_light.ambient);
+  ngl::ShaderLib::setUniform("light.diffuse",m_light.diffuse);
+  ngl::ShaderLib::setUniform("light.specular",m_light.specular);
+  ngl::ShaderLib::setUniform("light.position",m_light.position);
 
   // build the material for our shading model
 
-  shader->setUniform("material.ambient",0.1f,0.1f,0.1f,1.0f);
-  shader->setUniform("material.diffuse",1.0f,0.4f,0.1f,1.0f);
-  shader->setUniform("material.specular",1.0f,1.0f,1.0f,1.0f);
-  shader->setUniform("materal.shininess",80.0f);
+  ngl::ShaderLib::setUniform("material.ambient",0.1f,0.1f,0.1f,1.0f);
+  ngl::ShaderLib::setUniform("material.diffuse",1.0f,0.4f,0.1f,1.0f);
+  ngl::ShaderLib::setUniform("material.specular",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("materal.shininess",80.0f);
 
 
-  m_text.reset(  new  ngl::Text(QFont("Arial",14)));
+  m_text=std::make_unique<ngl::Text>("fonts/Arial.ttf",14);
   m_text->setScreenSize(width(),height());
-
 }
 
 
 void NGLScene::loadMatricesToShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
@@ -124,10 +118,9 @@ void NGLScene::loadMatricesToShader()
   MVP=m_project*MV;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
-  shader->setUniform("MV",MV);
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("normalMatrix",normalMatrix);
-
+  ngl::ShaderLib::setUniform("MV",MV);
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
 }
 
 void NGLScene::paintGL()
@@ -135,10 +128,8 @@ void NGLScene::paintGL()
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0,0,m_width,m_height);
-  // grab an instance of the shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["DirectionalLight"]->use();
-  shader->setUniform("light.position",m_light.position);
+  ngl::ShaderLib::use("DirectionalLight");
+  ngl::ShaderLib::setUniform("light.position",m_light.position);
   // Rotation based on the mouse position for our global transform
   ngl::Transformation trans;
   // Rotation based on the mouse position for our global
@@ -154,21 +145,16 @@ void NGLScene::paintGL()
   m_mouseGlobalTX.m_m[3][0] = m_modelPos.m_x;
   m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
   m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
-  // get the VBO instance and draw the built in teapot
-  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   // draw
   loadMatricesToShader();
-  prim->draw("teapot");
+  ngl::VAOPrimitives::draw("teapot");
   // now render the text using the QT renderText helper function
   m_text->setColour(ngl::Vec3(1,1,1));
-  m_text->renderText(10,18,"Use Arrow Keys to move Light i and o to move in and out");
+  m_text->renderText(10,700,"Use Arrow Keys to move Light i and o to move in and out");
   m_text->setColour(ngl::Vec3(1,1,0));
 
-  QString text=QString("Light Position [%1,%2,%3]")
-                      .arg(m_light.position.m_x,4,'f',1,'0')
-                      .arg(m_light.position.m_y,4,'f',1,'0')
-                      .arg(m_light.position.m_z,4,'f',1,'0');
-  m_text->renderText(10,36,text );
+  std::string text=fmt::format("Light Position [{:0.4f},{:0.4f},{:0.4f}]",m_light.position.m_x,m_light.position.m_y,m_light.position.m_z);
+  m_text->renderText(10,680,text );
 
 }
 

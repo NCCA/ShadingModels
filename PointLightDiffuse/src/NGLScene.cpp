@@ -45,37 +45,34 @@ void NGLScene::initializeGL()
 {
   // we must call this first before any other GL commands to load and link the
   // gl commands from the lib, if this is not done program will crash
-  ngl::NGLInit::instance();
+  ngl::NGLInit::initialize();
 
   glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_MULTISAMPLE);
-  // now to load the shader and set the values
-  // grab an instance of shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   // we are creating a shader called PointLightDiffuse
-  shader->createShaderProgram("PointLightDiffuse");
+  ngl::ShaderLib::createShaderProgram("PointLightDiffuse");
   // now we are going to create empty shaders for Frag and Vert
-  shader->attachShader("PointLightDiffuseVertex",ngl::ShaderType::VERTEX);
-  shader->attachShader("PointLightDiffuseFragment",ngl::ShaderType::FRAGMENT);
+  ngl::ShaderLib::attachShader("PointLightDiffuseVertex",ngl::ShaderType::VERTEX);
+  ngl::ShaderLib::attachShader("PointLightDiffuseFragment",ngl::ShaderType::FRAGMENT);
   // attach the source
-  shader->loadShaderSource("PointLightDiffuseVertex","shaders/PointLightDiffuseVert.glsl");
-  shader->loadShaderSource("PointLightDiffuseFragment","shaders/PointLightDiffuseFrag.glsl");
+  ngl::ShaderLib::loadShaderSource("PointLightDiffuseVertex","shaders/PointLightDiffuseVert.glsl");
+  ngl::ShaderLib::loadShaderSource("PointLightDiffuseFragment","shaders/PointLightDiffuseFrag.glsl");
   // compile the shaders
-  shader->compileShader("PointLightDiffuseVertex");
-  shader->compileShader("PointLightDiffuseFragment");
+  ngl::ShaderLib::compileShader("PointLightDiffuseVertex");
+  ngl::ShaderLib::compileShader("PointLightDiffuseFragment");
   // add them to the program
-  shader->attachShaderToProgram("PointLightDiffuse","PointLightDiffuseVertex");
-  shader->attachShaderToProgram("PointLightDiffuse","PointLightDiffuseFragment");
+  ngl::ShaderLib::attachShaderToProgram("PointLightDiffuse","PointLightDiffuseVertex");
+  ngl::ShaderLib::attachShaderToProgram("PointLightDiffuse","PointLightDiffuseFragment");
 
   // now we have associated this data we can link the shader
-  shader->linkProgramObject("PointLightDiffuse");
+  ngl::ShaderLib::linkProgramObject("PointLightDiffuse");
   // and make it active ready to load values
-  (*shader)["PointLightDiffuse"]->use();
-  shader->setUniform("diffuse",0.8f,0.3f,0.1f,1.0f);
-  shader->setUniform("light.diffuse",1.0f,1.0f,1.0f,1.0f);
-  shader->setUniform("light.position",0.0f,2.0f,1.0f);
+  ngl::ShaderLib::use("PointLightDiffuse");
+  ngl::ShaderLib::setUniform("diffuse",0.8f,0.3f,0.1f,1.0f);
+  ngl::ShaderLib::setUniform("light.diffuse",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("light.position",0.0f,2.0f,1.0f);
 
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
@@ -94,8 +91,6 @@ void NGLScene::initializeGL()
 
 void NGLScene::loadMatricesToShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
@@ -103,8 +98,8 @@ void NGLScene::loadMatricesToShader()
   MVP=m_project*MV ;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("normalMatrix",normalMatrix);
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
 }
 
 void NGLScene::paintGL()
@@ -112,9 +107,7 @@ void NGLScene::paintGL()
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0,0,m_width,m_height);
-  // grab an instance of the shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["PointLightDiffuse"]->use();
+  ngl::ShaderLib::use("PointLightDiffuse");
   // Rotation based on the mouse position for our global transform
   ngl::Transformation trans;
   // Rotation based on the mouse position for our global
@@ -130,11 +123,9 @@ void NGLScene::paintGL()
   m_mouseGlobalTX.m_m[3][0] = m_modelPos.m_x;
   m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
   m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
-  // get the VBO instance and draw the built in teapot
-  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   // draw
   loadMatricesToShader();
-  prim->draw("teapot");
+  ngl::VAOPrimitives::draw("teapot");
 }
 
 //----------------------------------------------------------------------------------------------------------------------

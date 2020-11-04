@@ -47,34 +47,31 @@ void NGLScene::initializeGL()
 {
   // we must call this first before any other GL commands to load and link the
   // gl commands from the lib, if this is not done program will crash
-  ngl::NGLInit::instance();
+  ngl::NGLInit::initialize();
   glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_MULTISAMPLE);
-  // now to load the shader and set the values
-  // grab an instance of shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   // we are creating a shader called PerVertASD
-  shader->createShaderProgram("PerVertASD");
+  ngl::ShaderLib::createShaderProgram("PerVertASD");
   // now we are going to create empty shaders for Frag and Vert
-  shader->attachShader("PerVertASDVertex",ngl::ShaderType::VERTEX);
-  shader->attachShader("PerVertASDFragment",ngl::ShaderType::FRAGMENT);
+  ngl::ShaderLib::attachShader("PerVertASDVertex",ngl::ShaderType::VERTEX);
+  ngl::ShaderLib::attachShader("PerVertASDFragment",ngl::ShaderType::FRAGMENT);
   // attach the source
-//  shader->loadShaderSource("PerVertASDVertex","shaders/PerVertASDVert.glsl");
-  shader->loadShaderSource("PerVertASDVertex","shaders/PerVertASDVertFunc.glsl");
-  shader->loadShaderSource("PerVertASDFragment","shaders/PerVertASDFrag.glsl");
+//  ngl::ShaderLib::loadShaderSource("PerVertASDVertex","shaders/PerVertASDVert.glsl");
+  ngl::ShaderLib::loadShaderSource("PerVertASDVertex","shaders/PerVertASDVertFunc.glsl");
+  ngl::ShaderLib::loadShaderSource("PerVertASDFragment","shaders/PerVertASDFrag.glsl");
   // compile the shaders
-  shader->compileShader("PerVertASDVertex");
-  shader->compileShader("PerVertASDFragment");
+  ngl::ShaderLib::compileShader("PerVertASDVertex");
+  ngl::ShaderLib::compileShader("PerVertASDFragment");
   // add them to the program
-  shader->attachShaderToProgram("PerVertASD","PerVertASDVertex");
-  shader->attachShaderToProgram("PerVertASD","PerVertASDFragment");
+  ngl::ShaderLib::attachShaderToProgram("PerVertASD","PerVertASDVertex");
+  ngl::ShaderLib::attachShaderToProgram("PerVertASD","PerVertASDFragment");
 
   // now we have associated this data we can link the shader
-  shader->linkProgramObject("PerVertASD");
+  ngl::ShaderLib::linkProgramObject("PerVertASD");
   // and make it active ready to load values
-  (*shader)["PerVertASD"]->use();
+  ngl::ShaderLib::use("PerVertASD");
   // now we need to set the material and light values
   /*
    *struct MaterialInfo
@@ -88,12 +85,12 @@ void NGLScene::initializeGL()
         // Specular shininess factor
         float shininess;
   };*/
-  shader->setUniform("material.Ka",0.1f,0.1f,0.1f);
+  ngl::ShaderLib::setUniform("material.Ka",0.1f,0.1f,0.1f);
   // red diffuse
-  shader->setUniform("material.Kd",0.8f,0.0f,0.0f);
+  ngl::ShaderLib::setUniform("material.Kd",0.8f,0.0f,0.0f);
   // white spec
-  shader->setUniform("material.Ks",1.0f,1.0f,1.0f);
-  shader->setUniform("material.shininess",100.0f);
+  ngl::ShaderLib::setUniform("material.Ks",1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("material.shininess",100.0f);
   // now for  the lights values (all set to white)
   /*struct LightInfo
   {
@@ -106,10 +103,10 @@ void NGLScene::initializeGL()
   // Specular light intensity
   vec3 Ls;
   };*/
-  shader->setUniform("light.position",m_lightPosition);
-  shader->setUniform("light.La",0.1f,0.1f,0.1f);
-  shader->setUniform("light.Ld",1.0f,1.0f,1.0f);
-  shader->setUniform("light.Ls",0.9f,0.9f,0.9f);
+  ngl::ShaderLib::setUniform("light.position",m_lightPosition);
+  ngl::ShaderLib::setUniform("light.La",0.1f,0.1f,0.1f);
+  ngl::ShaderLib::setUniform("light.Ld",1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("light.Ls",0.9f,0.9f,0.9f);
  // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
@@ -121,16 +118,13 @@ void NGLScene::initializeGL()
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
   m_project=ngl::perspective(45,(float)720.0/576.0,0.05,350);
-  m_text.reset(new  ngl::Text(QFont("Arial",14)));
+  m_text=std::make_unique<ngl::Text>("fonts/Arial.ttf",14);
   m_text->setScreenSize(width(),height());
-
 }
 
 
 void NGLScene::loadMatricesToShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
@@ -138,10 +132,10 @@ void NGLScene::loadMatricesToShader()
   MVP=m_project*MV ;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("MV",MV);
-  shader->setUniform("normalMatrix",normalMatrix);
-  shader->setUniform("light.position",m_lightPosition);
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("MV",MV);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
+  ngl::ShaderLib::setUniform("light.position",m_lightPosition);
 }
 
 void NGLScene::paintGL()
@@ -149,9 +143,7 @@ void NGLScene::paintGL()
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0,0,m_width,m_height);
-  // grab an instance of the shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["PerVertASD"]->use();
+  ngl::ShaderLib::use("PerVertASD");
   // Rotation based on the mouse position for our global
   // transform
   ngl::Mat4 rotX;
@@ -165,21 +157,16 @@ void NGLScene::paintGL()
   m_mouseGlobalTX.m_m[3][0] = m_modelPos.m_x;
   m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
   m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
-  // get the VBO instance and draw the built in teapot
-  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   // draw
   loadMatricesToShader();
-  prim->draw("teapot");
+  ngl::VAOPrimitives::draw("teapot");
   // now render the text using the QT renderText helper function
    m_text->setColour(1,1,1);
-   m_text->renderText(10,18,"Use Arrow Keys to move Light i and o to move in and out");
+   m_text->renderText(10,700,"Use Arrow Keys to move Light i and o to move in and out");
    m_text->setColour(1,1,0);
 
-   QString text=QString("Light Position [%1,%2,%3]")
-                       .arg(m_lightPosition.m_x,4,'f',1,'0')
-                       .arg(m_lightPosition.m_y,4,'f',1,'0')
-                       .arg(m_lightPosition.m_z,4,'f',1,'0');
-   m_text->renderText(10,36,text );
+   std::string text=fmt::format("Light Position [{:0.4f},{:0.4f},{:0.4f}]",m_lightPosition.m_x,m_lightPosition.m_y,m_lightPosition.m_z);
+   m_text->renderText(10,680,text );
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -272,8 +259,7 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
 {
   static float s_scale=200.0f;
   static float s_edge=0.2f;
-  ngl::ShaderLib *shader = ngl::ShaderLib::instance();
-  shader->use("PerVertASD");
+  ngl::ShaderLib::use("PerVertASD");
 
   // this method is called every time the main window recives a key event.
   // we then switch on the key value and set the camera in the GLWindow
@@ -298,25 +284,25 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_Plus :
   {
     s_scale+=5;
-    shader->setUniform("scale",s_scale);
+    ngl::ShaderLib::setUniform("scale",s_scale);
   break;
   }
   case Qt::Key_Minus :
   {
     s_scale-=5;
-    shader->setUniform("scale",s_scale);
+    ngl::ShaderLib::setUniform("scale",s_scale);
   break;
   }
   case Qt::Key_1 :
   {
     s_edge-=0.1;
-    shader->setUniform("edge",s_edge);
+    ngl::ShaderLib::setUniform("edge",s_edge);
   break;
   }
   case Qt::Key_2 :
   {
     s_edge+=0.1;
-    shader->setUniform("edge",s_edge);
+    ngl::ShaderLib::setUniform("edge",s_edge);
   break;
   }
 

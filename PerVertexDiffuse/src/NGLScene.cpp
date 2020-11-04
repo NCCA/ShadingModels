@@ -47,36 +47,33 @@ void NGLScene::initializeGL()
 {
   // we must call this first before any other GL commands to load and link the
   // gl commands from the lib, if this is not done program will crash
-  ngl::NGLInit::instance();
+  ngl::NGLInit::initialize();
 
   glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_MULTISAMPLE);
-  // now to load the shader and set the values
-  // grab an instance of shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   // we are creating a shader called PerVertDiffuse
-  shader->createShaderProgram("PerVertDiffuse");
+  ngl::ShaderLib::createShaderProgram("PerVertDiffuse");
   // now we are going to create empty shaders for Frag and Vert
-  shader->attachShader("PerVertDiffuseVertex",ngl::ShaderType::VERTEX);
-  shader->attachShader("PerVertDiffuseFragment",ngl::ShaderType::FRAGMENT);
+  ngl::ShaderLib::attachShader("PerVertDiffuseVertex",ngl::ShaderType::VERTEX);
+  ngl::ShaderLib::attachShader("PerVertDiffuseFragment",ngl::ShaderType::FRAGMENT);
   // attach the source
-  shader->loadShaderSource("PerVertDiffuseVertex","shaders/PerVertDiffuseVert.glsl");
-  shader->loadShaderSource("PerVertDiffuseFragment","shaders/PerVertDiffuseFrag.glsl");
+  ngl::ShaderLib::loadShaderSource("PerVertDiffuseVertex","shaders/PerVertDiffuseVert.glsl");
+  ngl::ShaderLib::loadShaderSource("PerVertDiffuseFragment","shaders/PerVertDiffuseFrag.glsl");
   // compile the shaders
-  shader->compileShader("PerVertDiffuseVertex");
-  shader->compileShader("PerVertDiffuseFragment");
+  ngl::ShaderLib::compileShader("PerVertDiffuseVertex");
+  ngl::ShaderLib::compileShader("PerVertDiffuseFragment");
   // add them to the program
-  shader->attachShaderToProgram("PerVertDiffuse","PerVertDiffuseVertex");
-  shader->attachShaderToProgram("PerVertDiffuse","PerVertDiffuseFragment");
+  ngl::ShaderLib::attachShaderToProgram("PerVertDiffuse","PerVertDiffuseVertex");
+  ngl::ShaderLib::attachShaderToProgram("PerVertDiffuse","PerVertDiffuseFragment");
 
   // now we have associated this data we can link the shader
-  shader->linkProgramObject("PerVertDiffuse");
+  ngl::ShaderLib::linkProgramObject("PerVertDiffuse");
   // and make it active ready to load values
-  (*shader)["PerVertDiffuse"]->use();
-  shader->setUniform("Kd",0.8f,0.3f,0.1f);
-  shader->setUniform("Ld",1.0f,1.0f,1.0f);
+  ngl::ShaderLib::use("PerVertDiffuse");
+  ngl::ShaderLib::setUniform("Kd",0.8f,0.3f,0.1f);
+  ngl::ShaderLib::setUniform("Ld",1.0f,1.0f,1.0f);
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
@@ -88,7 +85,7 @@ void NGLScene::initializeGL()
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
   m_project=ngl::perspective(45,(float)720.0/576.0,0.05,350);
-  m_text.reset(  new  ngl::Text(QFont("Arial",14)));
+  m_text=std::make_unique<ngl::Text>("fonts/Arial.ttf",14);
   m_text->setScreenSize(width(),height());
 
 }
@@ -96,8 +93,6 @@ void NGLScene::initializeGL()
 
 void NGLScene::loadMatricesToShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
@@ -105,10 +100,10 @@ void NGLScene::loadMatricesToShader()
   MVP=m_project*MV ;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("MV",MV);
-  shader->setUniform("normalMatrix",normalMatrix);
-  shader->setUniform("lightPos",m_lightPosition);
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("MV",MV);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
+  ngl::ShaderLib::setUniform("lightPos",m_lightPosition);
 }
 
 void NGLScene::paintGL()
@@ -116,9 +111,7 @@ void NGLScene::paintGL()
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0,0,m_width,m_height);
-  // grab an instance of the shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["PerVertDiffuse"]->use();
+  ngl::ShaderLib::use("PerVertDiffuse");
   // Rotation based on the mouse position for our global
   // transform
   ngl::Mat4 rotX;
@@ -132,21 +125,16 @@ void NGLScene::paintGL()
   m_mouseGlobalTX.m_m[3][0] = m_modelPos.m_x;
   m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
   m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
-  // get the VBO instance and draw the built in teapot
-  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   // draw
   loadMatricesToShader();
-  prim->draw("teapot");
+  ngl::VAOPrimitives::draw("teapot");
   // now render the text using the QT renderText helper function
    m_text->setColour(ngl::Vec3(1,1,1));
-   m_text->renderText(10,18,"Use Arrow Keys to move Light i and o to move in and out");
+   m_text->renderText(10,700,"Use Arrow Keys to move Light i and o to move in and out");
    m_text->setColour(ngl::Vec3(1,1,0));
 
-   QString text=QString("Light Position [%1,%2,%3]")
-                       .arg(m_lightPosition.m_x,4,'f',1,'0')
-                       .arg(m_lightPosition.m_y,4,'f',1,'0')
-                       .arg(m_lightPosition.m_z,4,'f',1,'0');
-   m_text->renderText(10,36,text );
+   std::string text=fmt::format("Light Position [{:0.4f},{:0.4f},{:0.4f}]",m_lightPosition.m_x,m_lightPosition.m_y,m_lightPosition.m_z);
+   m_text->renderText(10,680,text );
 }
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -5,7 +5,6 @@
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
-#include <boost/format.hpp>
 #include <ngl/NGLStream.h>
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -47,40 +46,35 @@ void NGLScene::initializeGL()
 {
   // we must call this first before any other GL commands to load and link the
   // gl commands from the lib, if this is not done program will crash
-  ngl::NGLInit::instance();
+  ngl::NGLInit::initialize();
 
   glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_MULTISAMPLE);
-  // now to load the shader and set the values
-  // grab an instance of shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   // we are creating a shader called MultipleLights
-  shader->createShaderProgram("MultipleLights");
+  ngl::ShaderLib::createShaderProgram("MultipleLights");
   // now we are going to create empty shaders for Frag and Vert
-  shader->attachShader("MultipleLightsVertex",ngl::ShaderType::VERTEX);
-  shader->attachShader("MultipleLightsFragment",ngl::ShaderType::FRAGMENT);
+  ngl::ShaderLib::attachShader("MultipleLightsVertex",ngl::ShaderType::VERTEX);
+  ngl::ShaderLib::attachShader("MultipleLightsFragment",ngl::ShaderType::FRAGMENT);
   // attach the source
-  shader->loadShaderSource("MultipleLightsVertex","shaders/MultiplePointLightVert.glsl");
-  shader->loadShaderSource("MultipleLightsFragment","shaders/MultiplePointLightFrag.glsl");
+  ngl::ShaderLib::loadShaderSource("MultipleLightsVertex","shaders/MultiplePointLightVert.glsl");
+  ngl::ShaderLib::loadShaderSource("MultipleLightsFragment","shaders/MultiplePointLightFrag.glsl");
   // compile the shaders
-  shader->compileShader("MultipleLightsVertex");
-  shader->compileShader("MultipleLightsFragment");
+  ngl::ShaderLib::compileShader("MultipleLightsVertex");
+  ngl::ShaderLib::compileShader("MultipleLightsFragment");
   // add them to the program
-  shader->attachShaderToProgram("MultipleLights","MultipleLightsVertex");
-  shader->attachShaderToProgram("MultipleLights","MultipleLightsFragment");
+  ngl::ShaderLib::attachShaderToProgram("MultipleLights","MultipleLightsVertex");
+  ngl::ShaderLib::attachShaderToProgram("MultipleLights","MultipleLightsFragment");
 
   // now we have associated this data we can link the shader
-  shader->linkProgramObject("MultipleLights");
+  ngl::ShaderLib::linkProgramObject("MultipleLights");
   // and make it active ready to load values
-  (*shader)["MultipleLights"]->use();
+  ngl::ShaderLib::use("MultipleLights");
 
   // now we have associated this data we can link the shader
-  shader->linkProgramObject("MultipleLights");
-  shader->printRegisteredUniforms("MultipleLights");
-  // and make it active ready to load values
-  (*shader)["MultipleLights"]->use();
+  ngl::ShaderLib::linkProgramObject("MultipleLights");
+  ngl::ShaderLib::printRegisteredUniforms("MultipleLights");
   // now we need to set the material and light values
   /*
    *struct MaterialInfo
@@ -94,12 +88,12 @@ void NGLScene::initializeGL()
         // Specular shininess factor
         float shininess;
   };*/
-  shader->setUniform("material.Ka",0.4f,0.4f,0.4f);
+  ngl::ShaderLib::setUniform("material.Ka",0.4f,0.4f,0.4f);
   // red diffuse
-  shader->setUniform("material.Kd",1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("material.Kd",1.0f,1.0f,1.0f);
   // white spec
-  shader->setUniform("material.Ks",1.0f,1.0f,1.0f);
-  shader->setUniform("material.shininess",20.0f);
+  ngl::ShaderLib::setUniform("material.Ks",1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("material.shininess",20.0f);
   // now for  the lights values (all set to white)
   /*struct LightInfo
   {
@@ -143,19 +137,19 @@ void NGLScene::initializeGL()
   {
     // char name[50];
     // sprintf(name,"light[%d]",i);
-    std::string name=boost::str(boost::format("light[%d]") % i );
-    shader->setUniform(name+".position",positions[index],positions[index+1],positions[index+2]);
-    shader->setUniform(name+".Ld",colours[index],colours[index+1],colours[index+2]);
-    shader->setUniform(name+".Ls",colours[index],colours[index+1],colours[index+2]);
+    std::string name=fmt::format("light[%d]", i );
+    ngl::ShaderLib::setUniform(name+".position",positions[index],positions[index+1],positions[index+2]);
+    ngl::ShaderLib::setUniform(name+".Ld",colours[index],colours[index+1],colours[index+2]);
+    ngl::ShaderLib::setUniform(name+".Ls",colours[index],colours[index+1],colours[index+2]);
 
-    shader->setUniform(name+".La",0.0f,0.0f,0.0f);
+    ngl::ShaderLib::setUniform(name+".La",0.0f,0.0f,0.0f);
 
     index+=3;
   }
 
   // grab the index into the shader block for the uniforms will use this
   // in the load matrices to shader routine.
-  m_transformsIndex = shader->getUniformBlockIndex("transforms");
+  m_transformsIndex = ngl::ShaderLib::getUniformBlockIndex("transforms");
   // generate a buffer ID for the transfom
   glGenBuffers( 1, &m_transformUboHandle );
 
@@ -169,11 +163,10 @@ void NGLScene::initializeGL()
   m_view=ngl::lookAt(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
- m_project=ngl::perspective(45.0f,(float)720.0f/576.0f,0.05f,350.0f);
-  ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
-  prim->createTrianglePlane("plane",30,30,20,20,ngl::Vec3(0,1,0));
-  shader->printProperties();
-  shader->printRegisteredUniforms("MultipleLights");
+  m_project=ngl::perspective(45.0f,(float)720.0f/576.0f,0.05f,350.0f);
+  ngl::VAOPrimitives::createTrianglePlane("plane",30,30,20,20,ngl::Vec3(0,1,0));
+  ngl::ShaderLib::printProperties();
+  ngl::ShaderLib::printRegisteredUniforms("MultipleLights");
 }
 
 
@@ -206,9 +199,7 @@ void NGLScene::paintGL()
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0,0,m_width,m_height);
-  // grab an instance of the shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["MultipleLights"]->use();
+   ngl::ShaderLib::use("MultipleLights");
   // Rotation based on the mouse position for our global
   // transform
   ngl::Mat4 rotX;
@@ -222,16 +213,14 @@ void NGLScene::paintGL()
   m_mouseGlobalTX.m_m[3][0] = m_modelPos.m_x;
   m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
   m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
-  // get the VBO instance and draw the built in teapot
-  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   // draw
   m_transform.reset();
 
   loadMatricesToShader();
-  prim->draw("teapot");
+  ngl::VAOPrimitives::draw("teapot");
   m_transform.setPosition(0,-0.45,0);
   loadMatricesToShader();
-  prim->draw("plane");
+  ngl::VAOPrimitives::draw("plane");
 
 }
 

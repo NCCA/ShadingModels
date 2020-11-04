@@ -45,33 +45,31 @@ void NGLScene::initializeGL()
 {
   // we must call this first before any other GL commands to load and link the
   // gl commands from the lib, if this is not done program will crash
-  ngl::NGLInit::instance();
+  ngl::NGLInit::initialize();
 
   glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
   glEnable(GL_DEPTH_TEST);
-  // grab an instance of shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   // we are creating a shader called Constant
-  shader->createShaderProgram("Constant");
+  ngl::ShaderLib::createShaderProgram("Constant");
   // now we are going to create empty shaders for Frag and Vert
-  shader->attachShader("ConstantVertex",ngl::ShaderType::VERTEX);
-  shader->attachShader("ConstantFragment",ngl::ShaderType::FRAGMENT);
+  ngl::ShaderLib::attachShader("ConstantVertex",ngl::ShaderType::VERTEX);
+  ngl::ShaderLib::attachShader("ConstantFragment",ngl::ShaderType::FRAGMENT);
   // attach the source
-  shader->loadShaderSource("ConstantVertex","shaders/ConstantVertex.glsl");
-  shader->loadShaderSource("ConstantFragment","shaders/ConstantFragment.glsl");
+  ngl::ShaderLib::loadShaderSource("ConstantVertex","shaders/ConstantVertex.glsl");
+  ngl::ShaderLib::loadShaderSource("ConstantFragment","shaders/ConstantFragment.glsl");
   // compile the shaders
-  shader->compileShader("ConstantVertex");
-  shader->compileShader("ConstantFragment");
+  ngl::ShaderLib::compileShader("ConstantVertex");
+  ngl::ShaderLib::compileShader("ConstantFragment");
   // add them to the program
-  shader->attachShaderToProgram("Constant","ConstantVertex");
-  shader->attachShaderToProgram("Constant","ConstantFragment");
+  ngl::ShaderLib::attachShaderToProgram("Constant","ConstantVertex");
+  ngl::ShaderLib::attachShaderToProgram("Constant","ConstantFragment");
 
   // now we have associated this data we can link the shader
-  shader->linkProgramObject("Constant");
+  ngl::ShaderLib::linkProgramObject("Constant");
   // and make it active ready to load values
-  (*shader)["Constant"]->use();
-  shader->setUniform("Colour",1.0f,0.0f,0.0f,1.0f);
+  ngl::ShaderLib::use("Constant");
+  ngl::ShaderLib::setUniform("Colour",1.0f,0.0f,0.0f,1.0f);
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
@@ -91,11 +89,10 @@ void NGLScene::initializeGL()
 
 void NGLScene::loadMatricesToShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
 
   ngl::Mat4 MVP;
   MVP=m_project*m_view*m_mouseGlobalTX;
-  shader->setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("MVP",MVP);
 }
 
 void NGLScene::paintGL()
@@ -103,9 +100,7 @@ void NGLScene::paintGL()
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0,0,m_width,m_height);
-  // grab an instance of the shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["Constant"]->use();
+  ngl::ShaderLib::use("Constant");
 
   // Rotation based on the mouse position for our global transform
   // Rotation based on the mouse position for our global transform
@@ -123,11 +118,9 @@ void NGLScene::paintGL()
   m_mouseGlobalTX.m_m[3][0] = m_modelPos.m_x;
   m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
   m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
-   // get the VBO instance and draw the built in teapot
-  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   // draw
   loadMatricesToShader();
-  prim->draw("teapot");
+  ngl::VAOPrimitives::draw("teapot");
 
 }
 
